@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 
 -- Text Localization
 local _language_id = Application.user_setting("language_id")

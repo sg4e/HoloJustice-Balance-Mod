@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 
 NewBreedTweaks = NewBreedTweaks or {} --table.clone(BreedTweaks)
 NewBreedTweaks.bloodlust_health = {
@@ -601,7 +601,7 @@ local function merge(dst, src)
     end
     return dst
 end
-function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)   
+function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -623,7 +623,7 @@ function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, ext
     NetworkLookup.buff_templates[index] = buff_name
     NetworkLookup.buff_templates[buff_name] = index
 end
-function mod.add_buff_template(self, buff_name, buff_data)   
+function mod.add_buff_template(self, buff_name, buff_data)
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),

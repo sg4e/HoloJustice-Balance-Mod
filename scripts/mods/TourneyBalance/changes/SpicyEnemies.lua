@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 
 local function merge(dst, src)
     for k, v in pairs(src) do

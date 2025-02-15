@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 
 --[[
 
@@ -25,7 +25,7 @@ local function merge(dst, src)
     end
     return dst
 end
-function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)   
+function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -47,7 +47,7 @@ function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, ext
     NetworkLookup.buff_templates[index] = buff_name
     NetworkLookup.buff_templates[buff_name] = index
 end
-function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)   
+function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -79,7 +79,7 @@ function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, 
     TalentBuffTemplates[hero_name][buff_name] = merged_buff
     BuffTemplates[buff_name] = merged_buff
 end
-function mod.add_buff_template(self, buff_name, buff_data)   
+function mod.add_buff_template(self, buff_name, buff_data)
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -1533,7 +1533,7 @@ mod:add_talent_buff_template("wood_elf", "kerillian_shade_ult_invis_combo_window
 	duration = 0.3,
 	refresh_durations = true,
 	event = "on_kill_elite_special",
-	extend_time = 1,                                           
+	extend_time = 1,
 	max_stacks = 1,
 	icon = "kerillian_shade_passive_stealth_on_backstab_kill",
 	remove_buff_func = "kerillian_shade_missed_combo_window"
@@ -1541,7 +1541,7 @@ mod:add_talent_buff_template("wood_elf", "kerillian_shade_ult_invis_combo_window
 mod:add_proc_function("shade_combo_stealth_on_hit", function (owner_unit, buff, params)
 	if ALIVE[owner_unit] then
 		local buff_extension = ScriptUnit.extension(owner_unit, "buff_system")
-		
+
 		if not buff_extension:has_buff_type("kerillian_shade_ult_invis_combo_blocker") then
 			if buff_extension:num_buff_stacks("shimmer_charges") > 0 then                    -- only gives shimmer buff if you have charges
 				buff_extension:add_buff("kerillian_shade_ult_invis_combo_window")
@@ -1558,10 +1558,10 @@ mod:add_proc_function("shimmer_control", function (owner_unit, buff, params)
 		local buff_name = buff_template.buff_to_remove
 		local buff_extension = ScriptUnit.extension(owner_unit, "buff_system")
 		local buffs = buff_extension:get_stacking_buff(buff_name)
-		
+
 		if buffs then
 			local num_stacks = #buffs
-			
+
 			if not buff_extension:has_buff_type("shimmer_abuser") then
 				if num_stacks > 0 then
 					local buff_id = buffs[num_stacks].id
@@ -1791,20 +1791,20 @@ mod:add_talent_buff_template("witch_hunter", "victor_priest_5_2_speed_buff", {
 })
 
 -- reduce long bubble to 7 seconds (Unyielding Blessing)
-CareerConstants.wh_priest.talent_6_1_improved_ability_duration = 7 --10 --this should already change the description as well
-mod:add_text("victor_priest_6_1_desc_new", "Shield of Faith now lasts 7 seconds. The shielded hero's attacks cause the shield to pulse, staggering nearby enemies.")
+CareerConstants.wh_priest.talent_6_1_improved_ability_duration = 10 --10 --this should already change the description as well
+mod:add_text("victor_priest_6_1_desc_new", "Shield of Faith now lasts 10 seconds. BEEG cat means BEEG shield.")
 
 mod:add_text("career_active_desc_wh_priest", "Saltzpyre imbues himself or an ally with a shield, rendering them immune to damage for 5 seconds. Upon expiring, the shield explodes, inflicting damage on nearby enemies. Hold to target allies.") -- just because FS formatting is awful
 mod:add_text("victor_priest_5_2_desc", "Bless the party with 10%% increased movement speed. Fly you fools.")
 mod:add_text("victor_priest_5_2", "Prayer of Flight")
-mod:add_text("victor_priest_6_2_desc", "Shield of Faith always affects Victor as well. Shield of Faith now lasts 3 seconds.")
+mod:add_text("victor_priest_6_2_desc", "Shield of Faith always affects Victor as well. Autofister empowers the shield to last 5 seconds.")
 
 local spell_params = {}
 local spell_params_improved = {
 	external_optional_duration = CareerConstants.wh_priest.talent_6_1_improved_ability_duration,
 }
 local spell_params_double= {
-	external_optional_duration = 3
+	external_optional_duration = 5
 }
 local spell_buffs = {
 	"victor_priest_activated_ability_invincibility",
@@ -2142,14 +2142,14 @@ mod:hook_origin(StackingBuffFunctions, "fire_grenade_dot_add", function (unit, s
 	local should_add_buff = current_num_stacks < 1      -- should_add_buff = true    idk why changing this works
 	local breed = AiUtils.unit_breed(unit)
 	local talent_extension = ScriptUnit.extension(owner_unit, "talent_system")
-	
+
 	if breed and breed.is_player then
 	local mechanism_name = Managers.mechanism:current_mechanism_name()
-	
+
 	if mechanism_name == "versus" then
 	should_add_buff = current_num_stacks < (sub_buff_template.max_player_stacks_in_versus or math.huge)
 	end
 	end
-	
+
 	return should_add_buff
 end)]]

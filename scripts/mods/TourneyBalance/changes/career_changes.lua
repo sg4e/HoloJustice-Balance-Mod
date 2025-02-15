@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 
 local buff_perks = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
 
@@ -192,7 +192,7 @@ table.insert(PassiveAbilitySettings.wh_2.buffs, "victor_bountyhunter_activate_pa
 ActivatedAbilitySettings.es_1[1].cooldown = 75
 
 --[[
-	
+
 	Footknight
 
 ]]
@@ -254,7 +254,7 @@ mod:modify_talent_buff_template("dwarf_ranger", "bardin_ranger_activated_ability
 mod:add_text("bardin_ranger_activated_ability_stealth_outside_of_smoke_desc", "Disengage's stealth does not break on moving beyond the smoke cloud. Reduces the cooldown of Disengage by 30%")
 
 --[[
-	
+
 	Waystalker
 
 ]]
@@ -417,7 +417,7 @@ end)
 table.insert(PassiveAbilitySettings.we_2.buffs, "kerillian_maidenguard_passive_damage_reduction")
 mod:add_talent_buff_template("wood_elf", "kerillian_maidenguard_passive_damage_reduction", {
 	stat_buff = "damage_taken",
-	multiplier = -0.3
+	multiplier = -0.1
 })
 PassiveAbilitySettings.we_2.perks = {
 	{
@@ -434,7 +434,7 @@ PassiveAbilitySettings.we_2.perks = {
 	}
 }
 mod:add_text("rebaltourn_career_passive_name_we_2d", "Bendy")
-mod:add_text("rebaltourn_career_passive_desc_we_2d_2", "Reduces damage taken by 30%.")
+mod:add_text("rebaltourn_career_passive_desc_we_2d_2", "Reduces damage taken by 10%.")
 
 mod:modify_talent_buff_template("wood_elf", "kerillian_maidenguard_passive_stamina_regen_aura", {
 	range = 20
@@ -448,19 +448,19 @@ mod:hook(CareerAbilityWEMaidenGuard, "_run_ability", function (func, self, ...)
     local talent_extension = ScriptUnit.extension(owner_unit, "talent_system")
     local bleed = talent_extension:has_talent("kerillian_maidenguard_activated_ability_damage")
 
-    if bleed then
-        local status_extension = self._status_extension
-        -- hitbox is a rectangular cube / cuboid with given width, height and length, and offset_forward changes its position relative to character's
-        status_extension.do_lunge.damage.width = 1.5    --1.5    --width of hitbox
-        status_extension.do_lunge.damage.depth_padding = 0.4   --0.4    --length of hitbox
-        status_extension.do_lunge.damage.offset_forward = 0   --0    --position of hitbox
-    else
+    -- if bleed then
+    --     local status_extension = self._status_extension
+    --     -- hitbox is a rectangular cube / cuboid with given width, height and length, and offset_forward changes its position relative to character's
+    --     status_extension.do_lunge.damage.width = 1.5    --1.5    --width of hitbox
+    --     status_extension.do_lunge.damage.depth_padding = 0.4   --0.4    --length of hitbox
+    --     status_extension.do_lunge.damage.offset_forward = 0   --0    --position of hitbox
+    -- else
         local status_extension = self._status_extension
         -- hitbox is a rectangular cube / cuboid with given width, height and length, and offset_forward changes its position relative to character's
         status_extension.do_lunge.damage.width = 5.0    --1.5    --width of hitbox
         status_extension.do_lunge.damage.depth_padding = 5.0   --0.4    --length of hitbox
         status_extension.do_lunge.damage.offset_forward = 0   --0    --position of hitbox
-    end
+    -- end
 end)
 
 --[[
@@ -495,7 +495,7 @@ mod:modify_talent_buff_template("wood_elf", "kerillian_shade_passive_stealth_par
 })
 mod:add_text("career_active_desc_we_1_2", "Kerillian becomes undetectable, can pass through enemies, and deals greatly increased melee damage. Lasts for 2.5 seconds or until she deals damage.")
 
---[[ 
+--[[
 
 	Sister of the Thorn
 

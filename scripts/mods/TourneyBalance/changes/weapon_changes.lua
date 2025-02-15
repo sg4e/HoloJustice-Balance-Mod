@@ -1,4 +1,4 @@
-local mod = get_mod("TourneyBalance")
+local mod = get_mod("HoloJustice")
 local buff_perks = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
 
 --[[
@@ -183,7 +183,7 @@ DamageProfileTemplates.arrow_sniper_kruber.critical_strike.attack_armor_power_mo
 --[[
 
 	BARDIN
-	
+
 ]]
 
 -- Trollhammer
@@ -335,8 +335,8 @@ DamageProfileTemplates.arrow_machinegun.armor_modifier_far.attack = {
 DamageProfileTemplates.arrow_machinegun.default_target.boost_curve_coefficient = 0.6
 DamageProfileTemplates.arrow_machinegun.default_target.boost_curve_coefficient_headshot = 1
 DamageProfileTemplates.arrow_machinegun.default_target.boost_curve_type = "linesman_curve"
-DamageProfileTemplates.arrow_machinegun.default_target.power_distribution_near.attack = 0.3 	
-DamageProfileTemplates.arrow_machinegun.default_target.power_distribution_far.attack = 0.25	
+DamageProfileTemplates.arrow_machinegun.default_target.power_distribution_near.attack = 0.3
+DamageProfileTemplates.arrow_machinegun.default_target.power_distribution_far.attack = 0.25
 DamageProfileTemplates.arrow_machinegun.friendly_fire_multiplier = 0.15
 DamageProfileTemplates.arrow_machinegun.shield_break = false
 
@@ -437,7 +437,7 @@ DamageProfileTemplates.arrow_sniper_ability_piercing.friendly_fire_multiplier = 
 
 
 
--- Bloodrazor Thicket 
+-- Bloodrazor Thicket
 DamageProfileTemplates.thorn_wall_explosion_improved_damage.armor_modifier.attack = {
 	0.5,
 	0.1,
@@ -3684,7 +3684,7 @@ NewDamageProfileTemplates.crowbill_light_1 = {
 		},
 	},
 	targets = {
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.5,
 			boost_curve_type = "ninja_curve",
@@ -3693,7 +3693,7 @@ NewDamageProfileTemplates.crowbill_light_1 = {
 				impact = 0.1,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.32,
 			boost_curve_type = "ninja_curve",
@@ -3702,7 +3702,7 @@ NewDamageProfileTemplates.crowbill_light_1 = {
 				impact = 0.91,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.16,
 			boost_curve_type = "ninja_curve",
@@ -3759,7 +3759,7 @@ NewDamageProfileTemplates.crowbill_light_2 = { -- Needs to do more damage than L
 		},
 	},
 	targets = {
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.5,
 			boost_curve_type = "ninja_curve",
@@ -3768,7 +3768,7 @@ NewDamageProfileTemplates.crowbill_light_2 = { -- Needs to do more damage than L
 				impact = 0.1,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.4,
 			boost_curve_type = "ninja_curve",
@@ -3777,7 +3777,7 @@ NewDamageProfileTemplates.crowbill_light_2 = { -- Needs to do more damage than L
 				impact = 0.95,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.3,
 			boost_curve_type = "ninja_curve",
@@ -3786,7 +3786,7 @@ NewDamageProfileTemplates.crowbill_light_2 = { -- Needs to do more damage than L
 				impact = 0.9,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.2,
 			boost_curve_type = "ninja_curve",
@@ -3795,7 +3795,7 @@ NewDamageProfileTemplates.crowbill_light_2 = { -- Needs to do more damage than L
 				impact = 0.85,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.1,
 			boost_curve_type = "ninja_curve",
@@ -3850,7 +3850,7 @@ NewDamageProfileTemplates.crowbill_light_3 = {
 		},
 	},
 	targets = {
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.5,
 			boost_curve_type = "ninja_curve",
@@ -3859,7 +3859,7 @@ NewDamageProfileTemplates.crowbill_light_3 = {
 				impact = 0.1,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.375,
 			boost_curve_type = "ninja_curve",
@@ -3868,7 +3868,7 @@ NewDamageProfileTemplates.crowbill_light_3 = {
 				impact = 0.94,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.25,
 			boost_curve_type = "ninja_curve",
@@ -3877,7 +3877,7 @@ NewDamageProfileTemplates.crowbill_light_3 = {
 				impact = 0.87,
 			},
 		},
-		{	
+		{
 			attack_template = "blunt_linesman",
 			boost_curve_coefficient_headshot = 1.125,
 			boost_curve_type = "ninja_curve",
@@ -5157,5 +5157,3 @@ Weapons.two_handed_cog_hammers_template_1.actions.action_one.heavy_attack_right.
 		input = "action_wield"
 	}
 }
-
-
