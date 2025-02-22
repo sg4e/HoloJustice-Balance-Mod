@@ -310,6 +310,7 @@ local sniper_dropoff_ranges = {
 DamageProfileTemplates.arrow_sniper_trueflight = {
     charge_value = "projectile",
     no_stagger_damage_reduction_ranged = true,
+	friendly_fire_multiplier = 0,
     critical_strike = {
         attack_armor_power_modifer = {
             1.5,
