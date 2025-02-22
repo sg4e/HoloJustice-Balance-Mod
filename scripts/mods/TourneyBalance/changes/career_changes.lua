@@ -1016,7 +1016,7 @@ table.insert(ProcEvents, "on_timed_block_long")
 
 --Firebomb fix
 mod:add_buff_template("burning_dot_fire_grenade", {
-	duration = 6,
+	duration = 8,
 	name = "burning dot",
 	end_flow_event = "smoke",
 	start_flow_event = "burn",
