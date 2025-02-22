@@ -1580,7 +1580,18 @@ mod:modify_talent("we_shade", 6, 1, {
 })
 mod:add_text("kerillian_shade_activated_stealth_combo_desc_tb", "Leaving Infiltrate grants stealth for 3 seconds. Killing an Elite or Special extends this duration by 1 second up to a maximum of 4 times.")
 
-
+-- shorter cd for hungry wind
+mod:modify_talent("we_shade", 6, 2, {
+    buffs = {
+        "hw_cooldown"
+    }
+})
+mod:add_talent_buff_template("wood_elf", "hw_cooldown", {
+    stat_buff = "activated_cooldown",
+    multiplier = -0.4,
+    max_stacks = 1
+})
+mod:add_text("kerillian_shade_activated_ability_phasing_desc", "Leaving Infiltrate grants Kerillian 10%% movement speed and 15%% power with the ability to pass through enemies for 10 seconds. Infiltrate no longer grants bonus damage. Reduced the cooldown of Infiltrade by 40%%.")
 
 --[[
 
