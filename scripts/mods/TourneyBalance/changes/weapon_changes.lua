@@ -2762,6 +2762,10 @@ NewDamageProfileTemplates.tb_warpick_lights = {
 	KERILLIAN
 
 ]]
+
+--Spear and Shield
+Weapons.one_handed_spears_shield_template.actions.action_one.heavy_attack.slide_armour_hit = true
+
 --Dual Daggers
 Weapons.dual_wield_daggers_template_1.actions.action_one.light_attack_left.additional_critical_strike_chance = 0.1
 Weapons.dual_wield_daggers_template_1.actions.action_one.light_attack_right.additional_critical_strike_chance = 0.1
