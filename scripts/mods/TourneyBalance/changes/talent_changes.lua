@@ -1073,7 +1073,7 @@ mod:modify_talent("dr_slayer", 5, 3, {
 		"bardin_slayer_push_on_dodge"
 	}
 })
-mod:add_text("bardin_slayer_activated_ability_leap_damage_desc", "Reduces damage taken while airborne by 90%% and increases attack damage while airborne during leap by 150%%.")
+mod:add_text("bardin_slayer_activated_ability_leap_damage_desc", "While airborne during leap, reduces damage taken by 90%% and increases attack damage by 150%%.")
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_slayer_activated_ability_leap_damage_buff", {
 	stat_buff = "damage_taken",
 	multiplier = -0.90
