@@ -1609,6 +1609,9 @@ NewDamageProfileTemplates.tb_2h_hammer_heavy = {
 	}
 }
 
+--1H Hammer and Book
+DamageProfileTemplates.medium_blunt_smiter_1h.default_target.power_distribution.attack = 0.45
+DamageProfileTemplates.hammer_book_charged_explosion.default_target.power_distribution.attack = 0.45
 
 
 --[[
