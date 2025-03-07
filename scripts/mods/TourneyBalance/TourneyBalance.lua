@@ -63,6 +63,9 @@ mod:dofile("scripts/mods/TourneyBalance/changes/career_changes")
 --Enemies for Spicy
 mod:dofile("scripts/mods/TourneyBalance/changes/SpicyEnemies")
 
+-- Performance Logging System
+mod:dofile("scripts/mods/TourneyBalance/performance/performance_logging")
+
 mod:echo("BETA HoloJustice")
 
 -- on_remove_stack_down
