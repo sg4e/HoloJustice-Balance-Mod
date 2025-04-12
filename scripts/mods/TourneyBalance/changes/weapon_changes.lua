@@ -2783,6 +2783,9 @@ Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.
 Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_window_end = 0.34
 Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_start = 0.19
 Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_end = 0.33
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.additional_critical_strike_chance = 0.1
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_bopp.additional_critical_strike_chance = 0.1
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_right.additional_critical_strike_chance = 0.1
 
 --Glaive
 -- Buffs to push attack chain attack speed and linesman on bopp, removes linesman from heavy attack, makes both heavy attacks have the Heavy 2 profile--
