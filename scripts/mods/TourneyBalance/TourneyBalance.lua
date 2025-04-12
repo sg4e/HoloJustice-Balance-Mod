@@ -66,6 +66,9 @@ mod:dofile("scripts/mods/TourneyBalance/changes/SpicyEnemies")
 -- Performance Logging System
 mod:dofile("scripts/mods/TourneyBalance/performance/performance_logging")
 
+-- sg4e added rat memes
+mod:dofile("scripts/mods/TourneyBalance/changes/rats")
+
 mod:echo("BETA HoloJustice")
 
 -- on_remove_stack_down
