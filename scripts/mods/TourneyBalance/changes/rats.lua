@@ -1,15 +1,12 @@
 local mod = get_mod("HoloJustice")
 
+local CMD_SILLY_PROJ_HELP = [[
+Enables or disabled the Silly Projectiles mod.
+]]
 
--- ProjectileTemplates.get_trajectory_template = function (trajectory_template_name, is_husk)
--- 	local templates = ProjectileTemplates.trajectory_templates
--- 	local husk_key = is_husk == true and "husk" or is_husk == false and "unit"
--- 	-- local template = templates[trajectory_template_name][husk_key]
---     if trajectory_template_name == "throw_trajectory" then
---         mod:echo("He throwin")
---     end
---     return templates[trajectory_template_name][husk_key]
--- end
+local enabled = false
+
+local original_projectile_trajectory = ProjectileTemplates.trajectory_templates.throw_trajectory
 
 local crazy_gas_balls = {
     prediction_function = function (speed, gravity, initial_position, target_position, target_velocity)
@@ -124,4 +121,13 @@ local crazy_gas_balls = {
     },
 }
 
-ProjectileTemplates.trajectory_templates.throw_trajectory = crazy_gas_balls
+mod:command("silly_proj", CMD_SILLY_PROJ_HELP, function(...)
+    enabled = not enabled
+    if enabled then
+        ProjectileTemplates.trajectory_templates.throw_trajectory = crazy_gas_balls
+        mod:echo("Silly Projectiles enabled")
+    else
+        ProjectileTemplates.trajectory_templates.throw_trajectory = original_projectile_trajectory
+        mod:echo("Silly Projectiles disabled")
+    end
+end)
