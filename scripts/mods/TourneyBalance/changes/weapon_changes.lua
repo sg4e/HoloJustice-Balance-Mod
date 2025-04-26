@@ -3272,6 +3272,8 @@ Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_left.damage
 Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_right.damage_profile = "tb_falchion_lights"
 Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_bopp.damage_profile = "tb_falchion_lights"
 Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_down.damage_profile = "light_slashing_smiter_finesse"
+Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_left.anim_time_scale = 1 * 1.2
+Weapons.one_hand_falchion_template_1.actions.action_one.light_attack_right.anim_time_scale = 1 * 1.2
 
 NewDamageProfileTemplates.tb_falchion_lights = {
 	armor_modifier = {
