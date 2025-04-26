@@ -2710,7 +2710,7 @@ NewDamageProfileTemplates.tb_warpick_lights = {
 	critical_strike = "critical_strike_axe_linesman_M",
 	charge_value = "heavy_attack",
 	cleave_distribution = {
-		attack = 0.4,
+		attack = 0.46,
 		impact = 0.4
 	},
 	default_target = "default_target_axe_linesman_M",
