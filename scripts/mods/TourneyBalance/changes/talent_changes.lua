@@ -996,7 +996,9 @@ mod:modify_talent_buff_template("dwarf_ranger", "bardin_slayer_attack_speed_on_d
 mod:add_text("bardin_slayer_attack_speed_on_double_one_handed_weapons_desc", "Gain 15.0%% attack speed if wielding 2 one-handed weapons.")
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_slayer_push_on_dodge", {
 	stat_buff = "damage_taken",
-	multiplier = -0.15
+	multiplier = -0.15,
+	stat_buff = "power_level_melee",
+	multiplier = 1.5
 })
 mod:modify_talent("dr_slayer", 5, 3, {
 	buffs = {
