@@ -461,8 +461,8 @@ end)
 ]]
 table.insert(PassiveAbilitySettings.we_2.buffs, "kerillian_maidenguard_passive_damage_reduction")
 mod:add_talent_buff_template("wood_elf", "kerillian_maidenguard_passive_damage_reduction", {
-	stat_buff = "damage_taken",
-	multiplier = -0.1
+	stat_buff = "healing_received",
+	multiplier = 0.4,
 })
 PassiveAbilitySettings.we_2.perks = {
 	{
@@ -479,7 +479,7 @@ PassiveAbilitySettings.we_2.perks = {
 	}
 }
 mod:add_text("rebaltourn_career_passive_name_we_2d", "Bendy")
-mod:add_text("rebaltourn_career_passive_desc_we_2d_2", "Reduces damage taken by 10%.")
+mod:add_text("rebaltourn_career_passive_desc_we_2d_2", "Increases healing received by 40%")
 
 mod:modify_talent_buff_template("wood_elf", "kerillian_maidenguard_passive_stamina_regen_aura", {
 	range = 20

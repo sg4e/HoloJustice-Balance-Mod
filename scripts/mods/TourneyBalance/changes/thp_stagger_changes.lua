@@ -39,6 +39,7 @@ Breeds.chaos_mutator_sorcerer.bloodlust_health = NewBreedTweaks.bloodlust_health
 Breeds.chaos_raider.bloodlust_health = NewBreedTweaks.bloodlust_health.chaos_elite
 Breeds.chaos_raider_tutorial.bloodlust_health = NewBreedTweaks.bloodlust_health.chaos_elite
 Breeds.chaos_spawn.bloodlust_health = NewBreedTweaks.bloodlust_health.monster
+--Breeds.chaos_tentacle_sorcerer.bloodlust_health = NewBreedTweaks.bloodlust_health.chaos_special
 Breeds.chaos_troll.bloodlust_health = NewBreedTweaks.bloodlust_health.monster
 Breeds.chaos_vortex_sorcerer.bloodlust_health = NewBreedTweaks.bloodlust_health.chaos_special
 Breeds.chaos_warrior.bloodlust_health = NewBreedTweaks.bloodlust_health.chaos_warrior
@@ -651,14 +652,21 @@ end
 
 local buff_perks = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
 
--- THP & Stagger Buffs
+--[[
+
+	THP Talents
+
+]]
+
+-- THP on Crit
 mod:add_proc_function("rebaltourn_heal_finesse_damage_on_melee", function (owner_unit, buff, params)
 	if not Managers.state.network.is_server then
 		return
 	end
 
-	local heal_amount_crit = 1.5
-	local heal_amount_hs = 3
+	local heal_amount_crit = 2 -- 6.2 2THP (Previously 1.5THP in TB)
+	local heal_amount_hs = 4 -- 6.2 4THP (Previously 3THP in TB)
+	local heal_amount_default = 0.5 -- 6.2 0.5THP newly added to gain THP even when not criting nor hsing
 	local has_procced = buff.has_procced
 	local hit_unit = params[1]
 	local hit_zone_name = params[3]
@@ -677,10 +685,14 @@ mod:add_proc_function("rebaltourn_heal_finesse_damage_on_melee", function (owner
 			buff.has_procced = true
 
 			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_hs, "heal_from_proc")
-		end
 
-		if critical_hit then
+		elseif critical_hit then
 			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_crit, "heal_from_proc")
+
+			buff.has_procced = true
+
+		else
+			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_default, "heal_from_proc")
 
 			buff.has_procced = true
 		end
@@ -693,6 +705,8 @@ mod:add_buff_template("rebaltourn_regrowth", {
 	event = "on_hit",
 	perks = { buff_perks.ninja_healing },
 })
+
+-- THP on Stagger
 mod:add_proc_function("rebaltourn_heal_stagger_targets_on_melee", function (owner_unit, buff, params)
 	if not Managers.state.network.is_server then
 		return
@@ -761,6 +775,8 @@ mod:add_buff_template("rebaltourn_vanguard", {
 	event = "on_stagger",
 	perks = { buff_perks.tank_healing }
 })
+
+-- THP on Cleave
 mod:add_buff_template("rebaltourn_reaper", {
 	multiplier = -0.05,
 	name = "reaper",
@@ -771,6 +787,8 @@ mod:add_buff_template("rebaltourn_reaper", {
 	max_targets = 5,
 	bonus = 0.25
 })
+
+-- THP on Kill
 mod:add_buff_template("rebaltourn_bloodlust", {
 	multiplier = 0.2,
 	name = "bloodlust",
@@ -779,6 +797,12 @@ mod:add_buff_template("rebaltourn_bloodlust", {
 	event = "on_kill",
 	perks = { buff_perks.smiter_healing },
 })
+
+--[[
+
+	Stagger Talents
+
+]]
 mod:add_buff_template("rebaltourn_smiter_unbalance", {
 	max_display_multiplier = 0.4,
 	name = "smiter_unbalance",
@@ -828,11 +852,13 @@ mod:add_buff_template("rebaltourn_finesse_unbalance", {
 })
 
 --Text Localization
-mod:add_text("bloodlust_name", "Bloodlust")
-mod:add_text("reaper_name", "Reaper")
-mod:add_text("vanguard_name", "Vanguard")
-mod:add_text("regrowth_name", "Regrowth")
-mod:add_text("rebaltourn_regrowth_desc", "Melee critical strikes gives you 1.5 temporary health and melee headshots restore 3 temporary health. Melee critical headshots restore 4.5 temporary health.")
+mod:add_text("bloodlust_name", "Execute") -- Kill Execute
+mod:add_text("reaper_name", "Carve") -- Cleave Carve
+mod:add_text("vanguard_name", "Second Wind") -- Stagger Second Wind
+mod:add_text("regrowth_name", "Sting") -- Crit Sting
+mod:add_text("rebaltourn_regrowth_desc", "Melee Strikes restore 0.5 Temporary Health. Melee Critical Strikes and Headshots instead restore 2. Critical Headshots instead restore 4.")
+--mod:add_text("rebaltourn_regrowth_desc", "Melee critical strikes gives you 1.5 temporary health and melee headshots restore 3 temporary health. Melee critical headshots restore 4.5 temporary health.")
+
 mod:add_text("smiter_name", "Smiter")
 mod:add_text("enhanced_power_name", "Enhanced Power")
 mod:add_text("assassin_name", "Assassin")
@@ -843,29 +869,29 @@ mod:add_text("rebaltourn_finesse_unbalance_desc", "Deal 20%% more damage to stag
 -- Replacing THP & Stagger Talents
 local talent_first_row = {
 	{
-		"es_knight",
 		"es_mercenary",
+		"es_knight",
+		"es_huntsman",
 		"es_questingknight",
+		"dr_ranger",
 		"dr_ironbreaker",
+		"dr_engineer",
 		"wh_zealot",
 		"wh_priest",
+		"bw_adept", -- bw
 		"bw_unchained",
 	},
 	{
-		"es_huntsman",
-		"dr_ranger",
-		"dr_engineer",
 		"we_maidenguard",
-		"wh_captain",
-		"wh_bountyhunter",
-		"bw_scholar",
-		"bw_adept",
 	},
 	{
 		"dr_slayer",
 		"we_shade",
 		"we_waywatcher",
 		"we_thornsister",
+		"wh_captain",
+		"wh_bountyhunter",
+		"bw_scholar", -- pyro
 		"bw_necromancer"
 	},
 }
@@ -873,14 +899,14 @@ local talent_first_row = {
 for i=1, #talent_first_row[1] do
 	local career = talent_first_row[1][i]
 	mod:modify_talent(career, 1, 1, {
-		name = "vanguard_name",
+		display_name = "vanguard_name",
 		description = "vanguard_desc",
 		buffs = {
 			"rebaltourn_vanguard"
 		}
 	})
 	mod:modify_talent(career, 1, 2, {
-		name = "reaper_name",
+		display_name = "reaper_name",
 		description = "reaper_desc",
 		buffs = {
 			"rebaltourn_reaper"
@@ -892,7 +918,7 @@ for i=1, #talent_first_row[1] do
 		},
 	})
 	mod:modify_talent(career, 1, 3, {
-		name = "bloodlust_name",
+		display_name = "bloodlust_name",
 		description = "bloodlust_desc_3",
 		buffs = {
 			"rebaltourn_bloodlust"
@@ -902,14 +928,14 @@ end
 for i=1, #talent_first_row[2] do
 	local career = talent_first_row[2][i]
 	mod:modify_talent(career, 1, 1, {
-		name = "vanguard_name",
+		display_name = "vanguard_name",
 		description = "vanguard_desc",
 		buffs = {
 			"rebaltourn_vanguard"
 		}
 	})
 	mod:modify_talent(career, 1, 2, {
-		name = "reaper_name",
+		display_name = "reaper_name",
 		description = "reaper_desc",
 		buffs = {
 			"rebaltourn_reaper"
@@ -921,7 +947,7 @@ for i=1, #talent_first_row[2] do
 		},
 	})
 	mod:modify_talent(career, 1, 3, {
-		name = "regrowth_name",
+		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
 			"rebaltourn_regrowth"
@@ -932,7 +958,7 @@ end
 for i=1, #talent_first_row[3] do
 	local career = talent_first_row[3][i]
 	mod:modify_talent(career, 1, 1, {
-		name = "reaper_name",
+		display_name = "reaper_name",
 		description = "reaper_desc",
 		buffs = {
 			"rebaltourn_reaper"
@@ -944,14 +970,14 @@ for i=1, #talent_first_row[3] do
 		},
 	})
 	mod:modify_talent(career, 1, 2, {
-		name = "bloodlust_name",
+		display_name = "bloodlust_name",
 		description = "bloodlust_desc_3",
 		buffs = {
 			"rebaltourn_bloodlust"
 		}
 	})
 	mod:modify_talent(career, 1, 3, {
-		name = "regrowth_name",
+		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
 			"rebaltourn_regrowth"
@@ -1443,16 +1469,6 @@ mod:hook_origin(DamageUtils, "apply_buffs_to_damage", function(current_damage, a
 	return damage
 end)
 
--- Trait Changes
-function mod.modify_trait(self, name, new_data)
-	local old_data = WeaponTraits.traits[name]
-
-    WeaponTraits.traits[name] = merge(old_data, new_data)
-end
-mod:modify_trait("necklace_heal_self_on_heal_other", {
-	buff_name = "conqueror",
-	advanced_description = "conqueror_desc_3",
-})
 
 -- Shield Push Nerfs
 -- Nerfs all shields' damage_profile_inner to "medium push"
