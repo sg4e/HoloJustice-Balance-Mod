@@ -254,14 +254,7 @@ mod:hook_origin(PassiveAbilityQuestingKnight, "_get_side_quest_challenge", funct
 	return side_quest_challenge
 end)
 
--- Sweep Nerf (no infinite damage cleave)
---infinite stagger cleave stays
---old damage numbers but heavy linesman instead (potentially too good against berzerkers)
---start window shorter for better visual feedback
-Weapons.markus_questingknight_career_skill_weapon.actions.action_career_release.default_tank.unlimited_cleave = false
-Weapons.markus_questingknight_career_skill_weapon.actions.action_career_release.default_tank.hit_mass_count = HEAVY_LINESMAN_HIT_MASS_COUNT
-Weapons.markus_questingknight_career_skill_weapon.actions.action_career_release.default_tank.damage_window_start = 0.05
-DamageProfileTemplates.questing_knight_career_sword_tank.cleave_distribution.attack = 0.5
+Weapons.markus_questingknight_career_skill_weapon.actions.action_career_release.default_tank.unlimited_cleave = true
 
 --[[
 
