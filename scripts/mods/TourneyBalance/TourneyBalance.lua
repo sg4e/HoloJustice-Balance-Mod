@@ -64,7 +64,13 @@ mod:dofile("scripts/mods/TourneyBalance/changes/career_changes")
 mod:dofile("scripts/mods/TourneyBalance/changes/SpicyEnemies")
 
 -- Performance Logging System
-mod:dofile("scripts/mods/TourneyBalance/performance/performance_logging")
+mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/performance_logging")
+
+-- Mod Checker
+mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/mod_checker")
+
+-- Basic QOL Features
+mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/basic_qol")
 
 -- sg4e added rat memes
 mod:dofile("scripts/mods/TourneyBalance/changes/rats")
@@ -431,8 +437,7 @@ for item_template_name, item_template in pairs(Weapons) do
 end
 
 mod.on_enabled = function (self)
-	mod:echo("Tourney balance enabled")
+	mod:echo(mod:localize("mod_enabled"))
 	updateValues()
-
 	return
 end

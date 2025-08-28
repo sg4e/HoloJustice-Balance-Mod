@@ -659,13 +659,14 @@ local buff_perks = require("scripts/unit_extensions/default_player_unit/buffs/se
 ]]
 
 -- THP on Crit
+--[[ 
 mod:add_proc_function("rebaltourn_heal_finesse_damage_on_melee", function (owner_unit, buff, params)
 	if not Managers.state.network.is_server then
 		return
 	end
 
 	local heal_amount_crit = 2 -- 6.2 2THP (Previously 1.5THP in TB)
-	local heal_amount_hs = 4 -- 6.2 4THP (Previously 3THP in TB)
+	local heal_amount_crit_hs = 4 -- 6.2 4THP (Previously 3THP in TB)
 	local heal_amount_default = 0.5 -- 6.2 0.5THP newly added to gain THP even when not criting nor hsing
 	local has_procced = buff.has_procced
 	local hit_unit = params[1]
@@ -681,19 +682,16 @@ mod:add_proc_function("rebaltourn_heal_finesse_damage_on_melee", function (owner
 	end
 
 	if ALIVE[owner_unit] and breed and (attack_type == "light_attack" or attack_type == "heavy_attack") and not has_procced then
-		if hit_zone_name == "head" or hit_zone_name == "neck" or hit_zone_name == "weakspot" then
+		if hit_zone_name == "head" or hit_zone_name == "neck" or hit_zone_name == "weakspot" and critical_hit then
+			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_crit_hs, "heal_from_proc")
 			buff.has_procced = true
 
-			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_hs, "heal_from_proc")
-
-		elseif critical_hit then
+		elseif critical_hit or hit_zone_name == "head" or hit_zone_name == "neck" or hit_zone_name == "weakspot" then
 			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_crit, "heal_from_proc")
-
 			buff.has_procced = true
 
 		else
 			DamageUtils.heal_network(owner_unit, owner_unit, heal_amount_default, "heal_from_proc")
-
 			buff.has_procced = true
 		end
 	end
@@ -704,7 +702,8 @@ mod:add_buff_template("rebaltourn_regrowth", {
 	buff_func = "rebaltourn_heal_finesse_damage_on_melee",
 	event = "on_hit",
 	perks = { buff_perks.ninja_healing },
-})
+}) 
+]]
 
 -- THP on Stagger
 mod:add_proc_function("rebaltourn_heal_stagger_targets_on_melee", function (owner_unit, buff, params)
@@ -1029,7 +1028,7 @@ for i=1, #talent_first_row[4] do
 		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
-			"rebaltourn_regrowth"
+			"kerillian_shade_regrowth"
 		},
 		description_values = {},
 	})
@@ -1043,7 +1042,7 @@ for i=1, #talent_first_row[5] do
 		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
-			"rebaltourn_regrowth"
+			"kerillian_shade_regrowth"
 		},
 		description_values = {},
 	})
@@ -1076,7 +1075,7 @@ for i=1, #talent_first_row[6] do
 		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
-			"rebaltourn_regrowth"
+			"kerillian_shade_regrowth"
 		},
 		description_values = {},
 	})
@@ -1121,7 +1120,7 @@ for i=1, #talent_first_row[7] do
 		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
-			"rebaltourn_regrowth"
+			"kerillian_shade_regrowth"
 		},
 		description_values = {},
 	})
@@ -1142,7 +1141,7 @@ for i=1, #talent_first_row[8] do
 		display_name = "regrowth_name",
 		description = "rebaltourn_regrowth_desc",
 		buffs = {
-			"rebaltourn_regrowth"
+			"kerillian_shade_regrowth"
 		},
 		description_values = {},
 	})
@@ -1167,7 +1166,11 @@ for i=1, #talent_first_row[8] do
 	})
 end
 
+--[[
 
+	Stagger Talents
+
+]]
 local talent_third_row = {
 	{
 		"es_mercenary",
@@ -1184,7 +1187,6 @@ local talent_third_row = {
 	},
 	{
 		"es_knight",
-		"es_questingknight",
 		"dr_ironbreaker",
 		"dr_engineer",
 		"we_maidenguard",
@@ -1193,7 +1195,11 @@ local talent_third_row = {
 		"wh_priest",
 		"bw_necromancer"
 	},
+	{
+		"es_questingknight",
+	},
 }
+-- smiter - assassin - Enhanced Power
 for i=1, #talent_third_row[1] do
 	local career = talent_third_row[1][i]
 	mod:modify_talent(career, 3, 1, {
@@ -1244,6 +1250,7 @@ for i=1, #talent_third_row[1] do
 		}
 	})
 end
+-- Smiter - Bulwark - Enhanced Power
 for i=1, #talent_third_row[2] do
 	local career = talent_third_row[2][i]
 	mod:modify_talent(career, 3, 1, {
@@ -1285,6 +1292,49 @@ for i=1, #talent_third_row[2] do
 		}
 	})
 end
+-- Bulwark - Smiter - Enhanced Power
+for i=1, #talent_third_row[3] do
+	local career = talent_third_row[3][i]
+	mod:modify_talent(career, 3, 1, {
+		name = "bulwark_name",
+		description = "rebaltourn_tank_unbalance_desc",
+		buffs = {
+			"rebaltourn_tank_unbalance"
+		},
+		description_values = {},
+	})
+	mod:modify_talent(career, 3, 2, {
+		name = "smiter_name",
+		description = "smiter_unbalance_desc",
+		buffs = {
+			"rebaltourn_smiter_unbalance"
+		},
+		description_values = {
+			{
+				value_type = "percent",
+				value = BuffTemplates.rebaltourn_smiter_unbalance.buffs[1].display_multiplier
+			},
+			{
+				value_type = "percent",
+				value = BuffTemplates.rebaltourn_smiter_unbalance.buffs[1].max_display_multiplier
+			}
+		}
+	})
+	mod:modify_talent(career, 3, 3, {
+		name = "enhanced_power_name",
+		description = "power_level_unbalance_desc",
+		buffs = {
+			"rebaltourn_power_level_unbalance"
+		},
+		description_values = {
+			{
+				value_type = "percent",
+				value = BuffTemplates.rebaltourn_power_level_unbalance.buffs[1].multiplier
+			}
+		}
+	})
+end
+
 
 --Dr related changes
 local IGNORED_SHARED_DAMAGE_TYPES = {

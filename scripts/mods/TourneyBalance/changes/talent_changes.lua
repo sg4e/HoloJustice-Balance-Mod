@@ -726,10 +726,37 @@ mod:modify_talent("dr_ranger", 5, 2, {
 	},
 })
 
+
+
+
+-- level 30
+-- Parting Gift
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_ranger_ability_free_grenade_buff", {
 	duration = 10,
     refresh_durations = true
 })
+mod:add_talent_buff_template("dwarf_ranger", "dwarf_ranger_less_burn_on_after_ult_buff", {
+    icon = "bardin_ranger_passive_spawn_healing_draught",
+    stat_buff = "increased_burn_dot_damage",
+    multiplier = -0.52,
+	max_stacks = 1,
+    refresh_durations = true,
+    duration = 18
+})
+mod:add_talent_buff_template("dwarf_ranger", "dwarf_ranger_less_burn_on_after_ult", {
+    buff_func = "add_buff",
+    buff_to_add = "dwarf_ranger_less_burn_on_after_ult_buff",
+    event = "on_ability_cooldown_started"
+})
+mod:modify_talent("dr_ranger", 6, 3, {
+    buffs = {
+        --"bardin_ranger_ability_free_grenade_buff",
+        "dwarf_ranger_less_burn_on_after_ult"
+    }
+})
+mod:add_text("bardin_ranger_ability_free_grenade_desc", "During Disengage Bardin's bomb throw will not be consumed. Only applicable to one bomb. DOT damage is reduced.")
+
+
 
 --[[
 
@@ -1845,6 +1872,10 @@ end)
 	Battle Wizard Talents
 
 ]]
+
+-- Level 10
+
+-- Famished Flames
 mod:modify_talent_buff_template("bright_wizard", "sienna_adept_increased_burn_damage", {
     multiplier = 1.5, -- 1,
 })
@@ -1853,6 +1884,22 @@ mod:modify_talent_buff_template("bright_wizard", "sienna_adept_reduced_non_burn_
 })
 mod:add_text("sienna_adept_increased_burn_damage_reduced_non_burn_damage_desc", "Burning damage over time is increased by 150.0%%. All non-burn damage is reduced by 30.0%%.")
 
+
+-- Lingering Flames
+mod:add_talent_buff_template("bright_wizard", "battle_wizard_lingering_reduced_dot_damage", {
+    stat_buff = "increased_burn_dot_damage",
+    multiplier = -0.5,
+})
+
+mod:modify_talent("bw_adept", 2, 3, {
+    buffs = {
+        "battle_wizard_lingering_reduced_dot_damage"
+    },
+    description = "tb_sienna_adept_infinite_burn_desc",
+    description_values = {},
+})
+mod:add_text("tb_sienna_adept_infinite_burn_desc", "Sienna's burning effects now last until the affected enemy dies. Burning effects do not stack and deal 50% reduced damage.")
+--[[
 InfiniteBurnDotLookup = InfiniteBurnDotLookup or {}
 local buff_perk_names = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
 local buff_templates = BuffTemplates
@@ -1879,7 +1926,14 @@ for template_name, template in pairs(buff_templates) do
 		end
 	end
 end
+]]
 
+
+-- Level 25
+
+-- Soot Shield
+-- Official: Igniting an enemy reduces damage taken by 8.0% for 5 seconds. Stacks up to 3 times.
+-- TB: Igniting an enemy reduces damage taken by 5%% for 5 seconds. Stacks up to 4 times.
 mod:modify_talent_buff_template("bright_wizard", "sienna_adept_damage_reduction_on_ignited_enemy_buff", {
     multiplier = -0.05, -- -0.1,
 	max_stacks = 4
@@ -1895,6 +1949,9 @@ mod:modify_talent("bw_adept", 5, 1, {
 })
 mod:add_text("rebaltourn_sienna_adept_damage_reduction_on_ignited_enemy_desc", "Igniting an enemy reduces damage taken by 5%% for 5 seconds. Stacks up to 4 times.")
 
+-- Fires from Ash
+-- Official: Killing a burning enemy reduces the cooldown of Fire Walk by 3%. 0.5 second cooldown.
+-- TB: Killing a burning enemy reduces the cooldown of Fire Walk by 2%. 0.5 second cooldown.
 mod:modify_talent_buff_template("bright_wizard", "sienna_adept_cooldown_reduction_on_burning_enemy_killed", {
     cooldown_reduction = 0.02 --0.03
 })
@@ -1903,12 +1960,21 @@ mod:modify_talent("bw_adept", 5, 2, {
     description_values = {
         {
             value_type = "percent",
-            value = 0.02 --BuffTemplates.sienna_adept_cooldown_reduction_on_burning_enemy_killed.cooldown_reduction
+            value = 0.02
         }
     },
 })
 mod:add_text("rebaltourn_sienna_adept_cooldown_reduction_on_burning_enemy_killed_desc", "Killing a burning enemy reduces the cooldown of Fire Walk by 2%%. 0.5 second cooldown.")
 
+-- Level 30
+
+-- Kaboom!
+-- Official: Fire Walk explosion radius and burn damage increased. No longer leaves a burning trail.
+-- TB: Fire Walk explosion radius and burn damage increased. No longer leaves a burning trail. Cooldown of Fire Walk reduced by 20%.
+mod:add_talent_buff_template("bright_wizard", "sienna_adept_activated_ability_explosion_buff", {
+    stat_buff = "activated_cooldown",
+	multiplier = -0.2
+})
 mod:modify_talent("bw_adept", 6, 2, {
     description = "rebaltourn_sienna_adept_activated_ability_explosion_desc",
 	buffs = {
@@ -1917,10 +1983,6 @@ mod:modify_talent("bw_adept", 6, 2, {
 })
 mod:add_text("rebaltourn_sienna_adept_activated_ability_explosion_desc", "Fire Walk explosion radius and burn damage increased. No longer leaves a burning trail. Cooldown of Fire Walk reduced by 20%.")
 
-mod:add_talent_buff_template("bright_wizard", "sienna_adept_activated_ability_explosion_buff", {
-    stat_buff = "activated_cooldown",
-	multiplier = -0.2
-})
 
 --[[
 
@@ -2245,21 +2307,3 @@ mod:add_proc_function("reduce_activated_ability_cooldown", function (owner_unit,
 		end
 	end
 end)
-
--- Fix Stacking bug for lingering flames with Firebombs
---[[ -- In theory fixed by FS last update
-mod:hook_origin(StackingBuffFunctions, "fire_grenade_dot_add", function (unit, sub_buff_template, current_num_stacks, buff_extension, new_buff_params)
-	local should_add_buff = current_num_stacks < 1      -- should_add_buff = true    idk why changing this works
-	local breed = AiUtils.unit_breed(unit)
-	local talent_extension = ScriptUnit.extension(owner_unit, "talent_system")
-
-	if breed and breed.is_player then
-	local mechanism_name = Managers.mechanism:current_mechanism_name()
-
-	if mechanism_name == "versus" then
-	should_add_buff = current_num_stacks < (sub_buff_template.max_player_stacks_in_versus or math.huge)
-	end
-	end
-
-	return should_add_buff
-end)]]
