@@ -562,16 +562,6 @@ mod:add_talent_buff_template("empire_soldier", "tb_cd_grail", {
 })
 mod:add_text("markus_questing_knight_ability_buff_on_kill_desc", "Killing an enemy with Blessed Blade increases movement speed by 35%% for 25 seconds. Reduces cooldown by 30%%.")
 
--- Virtue of Stoicism
--- 25% as thp instead of 50%
-mod:modify_talent_buff_template("empire_soldier", "markus_questing_knight_health_refund_over_time", {
-	heal_amount_fraction = 0.25 -- 0.5
-})
-mod:modify_talent("es_questingknight", 5, 1, {
-    description = "markus_questing_knight_health_refund_over_time_desc",
-    description_values = {},
-})
-mod:add_text("markus_questing_knight_health_refund_over_time_desc", "25% of damage taken is regenerated as temporary health after 5 seconds.")
 
 --[[
 
