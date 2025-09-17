@@ -63,12 +63,6 @@ mod:dofile("scripts/mods/TourneyBalance/changes/career_changes")
 --Enemies for Spicy
 mod:dofile("scripts/mods/TourneyBalance/changes/SpicyEnemies")
 
--- Performance Logging System
-mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/performance_logging")
-
--- Mod Checker
-mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/mod_checker")
-
 -- Basic QOL Features
 mod:dofile("scripts/mods/TourneyBalance/logging_and_qol/basic_qol")
 
