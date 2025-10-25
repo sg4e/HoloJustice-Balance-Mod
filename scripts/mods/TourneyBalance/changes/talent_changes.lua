@@ -1636,6 +1636,14 @@ mod:add_talent_buff_template("wood_elf", "tb_cd_thorn", {
 	multiplier = -0.3,
 	max_stacks = 1
 })
+mod:modify_talent_buff_template("wood_elf", "kerillian_thorn_sister_big_push_buff_2", {
+    multiplier = 2.5,
+    duration = 0.2,
+})
+mod:modify_talent_buff_template("wood_elf", "kerillian_thorn_sister_big_push_buff", {
+		bonus = 1.0,
+		duration = 0.2,
+})
 mod:add_text("kerillian_thorn_sister_debuff_wall_desc_2", "Thornwake instead causes roots to burst from the ground, staggering enemies and applying Blackvenom to them. Reduces cooldown by 30%%.")
 
 
