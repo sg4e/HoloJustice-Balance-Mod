@@ -664,6 +664,216 @@ mod:add_text("kerillian_thorn_sister_tanky_wall_desc_2", "Increase the width of 
 mod:add_text("kerillian_thorn_sister_faster_passive_desc", "Reduce the cooldown of Radiance by 25%%, taking damage sets the cooldown back 2 seconds.")
 
 --[[
+	Sister of the Thorn - Radiance Priority FIX
+	
+	The actual issue: In start_activated_ability_cooldown (line ~287), the game checks:
+	1. If cooldown is ready -> consume cooldown
+	2. ELSE IF radiance > 0 -> consume radiance
+	
+	We need to flip this so it checks Radiance FIRST.
+]]
+
+-- Hook the start_activated_ability_cooldown to prioritize Radiance
+mod:hook_origin(CareerExtension, "start_activated_ability_cooldown", function(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	ability_id = ability_id or 1
+	
+	-- Only modify for Sister of the Thorn with Radiant Inheritance talent
+	local career_name = self:career_name()
+	local unit = self._unit
+	local talent_extension = ScriptUnit.has_extension(unit, "talent_system")
+	local has_radiant_inheritance = talent_extension and talent_extension:has_talent("kerillian_thorn_sister_passive_team_buff", "wood_elf", true)
+	
+	if career_name ~= "we_thornsister" or not has_radiant_inheritance then
+		-- For all other careers, use original logic
+		local ability = self._abilities[ability_id]
+		local refund = ability.max_cooldown * (ability.cost * (refund_percent or 0))
+		local cost = ability.max_cooldown * ability.cost
+
+		if modified_cost then
+			cost = ability.max_cooldown * modified_cost
+		end
+
+		local unit = self._unit
+		local buff_extension = ScriptUnit.extension(unit, "buff_system")
+
+		if buff_extension:has_buff_perk("free_ability") then
+			cost = 0
+		end
+
+		if self:_cooldown_charge_ready(ability_id) or self._abilities_always_usable or ignore_ability_readiness then
+			local local_players = Managers.player:players_at_peer(Network.peer_id())
+
+			if local_players and unit then
+				for _, player in pairs(local_players) do
+					local player_unit = player.player_unit
+
+					if ALIVE[player_unit] then
+						local buff_extension = ScriptUnit.has_extension(player_unit, "buff_system")
+
+						if buff_extension then
+							buff_extension:trigger_procs("on_ability_activated", unit, ability_id)
+
+							local local_player = self.player
+							local other_player = player
+
+							Managers.state.achievement:trigger_event("any_ability_used", unit, ability_id, local_player, other_player)
+						end
+
+						local cosmetic_extension = ScriptUnit.has_extension(player_unit, "cosmetic_system")
+
+						if cosmetic_extension then
+							cosmetic_extension:trigger_ability_activated_events()
+						end
+					end
+				end
+			end
+		end
+
+		local network_manager = Managers.state.network
+		local unit_id = network_manager:unit_game_object_id(unit)
+		local game = network_manager:game()
+
+		if game then
+			if self.is_server then
+				network_manager.network_transmit:send_rpc_clients("rpc_ability_activated", unit_id, ability_id)
+			else
+				network_manager.network_transmit:send_rpc_server("rpc_ability_activated", unit_id, ability_id)
+			end
+		end
+
+		local game_mode = Managers.state.game_mode and Managers.state.game_mode:game_mode()
+
+		if self.player.local_player and game_mode and game_mode.activated_ability_telemetry then
+			local ability_data = self:get_activated_ability_data(ability_id)
+			local ability_name = ability_data.name or ability_data.display_name
+
+			game_mode:activated_ability_telemetry(ability_name, self.player)
+		end
+
+		local current_cooldown = self:current_ability_cooldown(ability_id)
+		local min_cooldown = ability.max_cooldown * (1 - ability.cost)
+
+		if current_cooldown <= min_cooldown or cost <= 0 then
+			self:increase_activated_ability_cooldown(cost - refund, ability_id)
+
+			local new_cooldown = self:current_ability_cooldown(ability_id)
+			local buffed_cooldown = buff_extension:apply_buffs_to_value(new_cooldown, "activated_cooldown")
+
+			if new_cooldown < buffed_cooldown then
+				self:increase_activated_ability_cooldown(buffed_cooldown - new_cooldown, ability_id)
+			elseif buffed_cooldown < new_cooldown then
+				self:reduce_activated_ability_cooldown(new_cooldown - buffed_cooldown, ability_id)
+			end
+		elseif self._extra_ability_uses > 0 then
+			self:modify_extra_ability_uses(-1)
+			buff_extension:trigger_procs("on_extra_ability_consumed", unit)
+			Managers.state.achievement:trigger_event("free_cast_used", unit, unit)
+		end
+
+		buff_extension:trigger_procs("on_ability_cooldown_started")
+
+		ability.cooldown_paused = false
+		ability.cooldown_anim_started = false
+		
+		return
+	end
+	
+	-- SISTER OF THE THORN LOGIC - Check Radiance FIRST
+	local ability = self._abilities[ability_id]
+	local refund = ability.max_cooldown * (ability.cost * (refund_percent or 0))
+	local cost = ability.max_cooldown * ability.cost
+
+	if modified_cost then
+		cost = ability.max_cooldown * modified_cost
+	end
+
+	local unit = self._unit
+	local buff_extension = ScriptUnit.extension(unit, "buff_system")
+
+	if buff_extension:has_buff_perk("free_ability") then
+		cost = 0
+	end
+
+	if self:_cooldown_charge_ready(ability_id) or self._abilities_always_usable or ignore_ability_readiness then
+		local local_players = Managers.player:players_at_peer(Network.peer_id())
+
+		if local_players and unit then
+			for _, player in pairs(local_players) do
+				local player_unit = player.player_unit
+
+				if ALIVE[player_unit] then
+					local buff_extension = ScriptUnit.has_extension(player_unit, "buff_system")
+
+					if buff_extension then
+						buff_extension:trigger_procs("on_ability_activated", unit, ability_id)
+
+						local local_player = self.player
+						local other_player = player
+
+						Managers.state.achievement:trigger_event("any_ability_used", unit, ability_id, local_player, other_player)
+					end
+
+					local cosmetic_extension = ScriptUnit.has_extension(player_unit, "cosmetic_system")
+
+					if cosmetic_extension then
+						cosmetic_extension:trigger_ability_activated_events()
+					end
+				end
+			end
+		end
+	end
+
+	local network_manager = Managers.state.network
+	local unit_id = network_manager:unit_game_object_id(unit)
+	local game = network_manager:game()
+
+	if game then
+		if self.is_server then
+			network_manager.network_transmit:send_rpc_clients("rpc_ability_activated", unit_id, ability_id)
+		else
+			network_manager.network_transmit:send_rpc_server("rpc_ability_activated", unit_id, ability_id)
+		end
+	end
+
+	local game_mode = Managers.state.game_mode and Managers.state.game_mode:game_mode()
+
+	if self.player.local_player and game_mode and game_mode.activated_ability_telemetry then
+		local ability_data = self:get_activated_ability_data(ability_id)
+		local ability_name = ability_data.name or ability_data.display_name
+
+		game_mode:activated_ability_telemetry(ability_name, self.player)
+	end
+
+	local current_cooldown = self:current_ability_cooldown(ability_id)
+	local min_cooldown = ability.max_cooldown * (1 - ability.cost)
+
+	-- THE KEY CHANGE: Check Radiance FIRST, then cooldown
+	if self._extra_ability_uses > 0 then
+		-- Consume Radiance instead of cooldown
+		self:modify_extra_ability_uses(-1)
+		buff_extension:trigger_procs("on_extra_ability_consumed", unit)
+		Managers.state.achievement:trigger_event("free_cast_used", unit, unit)
+	elseif current_cooldown <= min_cooldown or cost <= 0 then
+		-- No Radiance, consume cooldown normally
+		self:increase_activated_ability_cooldown(cost - refund, ability_id)
+
+		local new_cooldown = self:current_ability_cooldown(ability_id)
+		local buffed_cooldown = buff_extension:apply_buffs_to_value(new_cooldown, "activated_cooldown")
+
+		if new_cooldown < buffed_cooldown then
+			self:increase_activated_ability_cooldown(buffed_cooldown - new_cooldown, ability_id)
+		elseif buffed_cooldown < new_cooldown then
+			self:reduce_activated_ability_cooldown(new_cooldown - buffed_cooldown, ability_id)
+		end
+	end
+
+	buff_extension:trigger_procs("on_ability_cooldown_started")
+
+	ability.cooldown_paused = false
+	ability.cooldown_anim_started = false
+end)
+
+--[[
 
 	Zealot
 
