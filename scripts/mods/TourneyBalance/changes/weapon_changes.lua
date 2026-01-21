@@ -82,6 +82,10 @@ local handgun_dropoff_ranges = {
 }
 DamageProfileTemplates.shot_sniper.default_target.range_modifier_settings = handgun_dropoff_ranges
 
+-- Buff damage to infantry
+DamageProfileTemplates.es_handgun.armor_modifier.attack[1] = 0.9
+DamageProfileTemplates.dr_handgun.armor_modifier.attack[1] = 0.9
+
 
 --[[
 
