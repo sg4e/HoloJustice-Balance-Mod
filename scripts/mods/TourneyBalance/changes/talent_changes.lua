@@ -903,7 +903,7 @@ mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_increased_ra
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_drakefire_ranged_power", {
 	{
 		stat_buff = "increased_weapon_damage_ranged",
-		multiplier = 0.05, -- 0.2 -- Damage value increase per stack. There are 10 stacks.
+		multiplier = 0.13, -- 0.2 -- Damage value increase per stack. There are 10 stacks.
 	},
 })
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_drakefire_changing_attack_speed", {
