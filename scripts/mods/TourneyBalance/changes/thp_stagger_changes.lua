@@ -65,6 +65,23 @@ Breeds.skaven_stormfiend_boss.bloodlust_health = NewBreedTweaks.bloodlust_health
 Breeds.skaven_stormfiend.bloodlust_health = NewBreedTweaks.bloodlust_health.monster
 Breeds.skaven_warpfire_thrower.bloodlust_health = NewBreedTweaks.bloodlust_health.skaven_special
 
+-- Guard stagger_ai against nil attacker_unit from environmental/hazard damage sources
+-- (e.g. cannons on Return to the Reik). Vanilla stagger_ai does:
+-- POSITION_LOOKUP[attacker_unit] or unit_world_position(attacker_unit, 0)
+-- POSITION_LOOKUP[nil] returns nil silently, then unit_world_position(nil) crashes.
+mod:hook(DamageUtils, "stagger_ai", function (func, t, damage_profile, target_index, power_level, target_unit, attacker_unit, hit_zone_name, attack_direction, boost_curve_multiplier, is_critical_strike, blocked, damage_source, source_attacker_unit, optional_predicted_damage)
+	if not attacker_unit then
+		if not POSITION_LOOKUP[target_unit] then
+			return
+		end
+		attacker_unit = target_unit
+	end
+	if not POSITION_LOOKUP[target_unit] and (not target_unit or not Unit.alive(target_unit)) then
+		return
+	end
+	return func(t, damage_profile, target_index, power_level, target_unit, attacker_unit, hit_zone_name, attack_direction, boost_curve_multiplier, is_critical_strike, blocked, damage_source, source_attacker_unit, optional_predicted_damage)
+end)
+
 -- Fixed Vanguard not proccing when you killed an enemy which is staggered
 local dead_units = {}
 local damage_source_procs = {
