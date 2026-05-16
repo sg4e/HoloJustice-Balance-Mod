@@ -595,6 +595,12 @@ local function should_prioritize_radiance(career_extension, ability_id, refund_p
 	end
 
 	local unit = career_extension._unit
+	local talent_extension = unit and ScriptUnit.has_extension(unit, "talent_system")
+
+	if not talent_extension or not talent_extension:has_talent("kerillian_thorn_sister_passive_team_buff", "wood_elf", true) then
+		return false
+	end
+
 	local buff_extension = unit and ScriptUnit.has_extension(unit, "buff_system")
 
 	if buff_extension and buff_extension:has_buff_perk("free_ability") then
