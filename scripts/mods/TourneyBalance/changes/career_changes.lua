@@ -571,6 +571,85 @@ mod:hook_origin(PassiveAbilityThornsister, "_update_extra_abilities_info", funct
     career_ext:update_extra_ability_charge(cooldown)
 end)
 
+local RADIANCE_COOLDOWN_MASK = 0.000001
+
+local function should_prioritize_radiance(career_extension, ability_id, refund_percent, modified_cost)
+	if ability_id ~= 1 then
+		return false
+	end
+
+	if career_extension:career_name() ~= "we_thornsister" then
+		return false
+	end
+
+	if not career_extension._extra_ability_uses or career_extension._extra_ability_uses <= 0 then
+		return false
+	end
+
+	if refund_percent and refund_percent >= 1 then
+		return false
+	end
+
+	if modified_cost and modified_cost <= 0 then
+		return false
+	end
+
+	local unit = career_extension._unit
+	local talent_extension = unit and ScriptUnit.has_extension(unit, "talent_system")
+
+	if not talent_extension or not talent_extension:has_talent("kerillian_thorn_sister_passive_team_buff", "wood_elf", true) then
+		return false
+	end
+
+	local buff_extension = unit and ScriptUnit.has_extension(unit, "buff_system")
+
+	if buff_extension and buff_extension:has_buff_perk("free_ability") then
+		return false
+	end
+
+	return career_extension:_cooldown_charge_ready(ability_id)
+end
+
+mod:hook(CareerExtension, "start_activated_ability_cooldown", function(func, self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	local resolved_ability_id = ability_id or 1
+
+	if not should_prioritize_radiance(self, resolved_ability_id, refund_percent, modified_cost) then
+		return func(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	end
+
+	local ability = self._abilities and self._abilities[resolved_ability_id]
+	local cooldowns = ability and ability.cooldowns
+	local cooldown_index = cooldowns and #cooldowns or 0
+
+	if cooldown_index == 0 then
+		return func(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	end
+
+	local original_cooldown = cooldowns[cooldown_index]
+	local ability_cost = ability.cost or 1
+	local max_cooldown = ability.max_cooldown
+	local min_cooldown = max_cooldown * (1 - ability_cost)
+
+	if original_cooldown > min_cooldown or min_cooldown >= max_cooldown then
+		return func(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	end
+
+	local masked_cooldown = math.min(max_cooldown, min_cooldown + RADIANCE_COOLDOWN_MASK)
+
+	if masked_cooldown <= min_cooldown then
+		return func(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+	end
+
+	-- Let vanilla fall through to its existing Radiance consumption branch without replacing the global method.
+	cooldowns[cooldown_index] = masked_cooldown
+
+	func(self, ability_id, refund_percent, modified_cost, ignore_ability_readiness)
+
+	if ability.cooldowns == cooldowns and cooldowns[cooldown_index] == masked_cooldown then
+		cooldowns[cooldown_index] = original_cooldown
+	end
+end)
+
 local WALL_TYPES = table.enum("default", "bleed")
 local UNIT_NAMES = {
 	default = "units/beings/player/way_watcher_thornsister/abilities/ww_thornsister_thorn_wall_01",
