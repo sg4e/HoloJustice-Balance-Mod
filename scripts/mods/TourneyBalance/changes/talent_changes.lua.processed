@@ -1,4 +1,4 @@
-local mod = get_mod("HoloJustice")
+local mod = get_mod("TourneyBalance")
 
 --[[
 
@@ -25,7 +25,7 @@ local function merge(dst, src)
     end
     return dst
 end
-function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)
+function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)   
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -47,7 +47,7 @@ function mod.add_talent_buff_template(self, hero_name, buff_name, buff_data, ext
     NetworkLookup.buff_templates[index] = buff_name
     NetworkLookup.buff_templates[buff_name] = index
 end
-function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)
+function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, extra_data)   
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -79,7 +79,7 @@ function mod.modify_talent_buff_template(self, hero_name, buff_name, buff_data, 
     TalentBuffTemplates[hero_name][buff_name] = merged_buff
     BuffTemplates[buff_name] = merged_buff
 end
-function mod.add_buff_template(self, buff_name, buff_data)
+function mod.add_buff_template(self, buff_name, buff_data)   
     local new_talent_buff = {
         buffs = {
             merge({ name = buff_name }, buff_data),
@@ -253,7 +253,6 @@ mod:add_proc_function("gain_markus_mercenary_passive_proc", function (owner_unit
 				buff_system:add_buff(unit, buff_to_add, owner_unit, false) ---- This is Strike Together being added on as a passive.
 			end
 		end
-		
 		if talent_extension:has_talent("markus_mercenary_passive_improved", "empire_soldier", true) then  -- Enchanced Training
 			buff_system:add_buff(owner_unit, "markus_mercenary_passive_improved", owner_unit, false)
 		elseif talent_extension:has_talent("markus_mercenary_passive_power_level_on_proc", "empire_soldier", true) then  -- Reikland Reaper
@@ -279,10 +278,6 @@ mod:add_proc_function("gain_markus_mercenary_passive_proc", function (owner_unit
 					buff_system:add_buff(unit, buff_to_add, owner_unit, false)
 				end
 			end
-			
-			if talent_extension:has_talent("markus_mercenary_passive_defence_on_proc", "empire_soldier", true) and buff_applied then
-				buff_system:add_buff(owner_unit, "markus_mercenary_passive_defence", owner_unit, false)
-			end
 		end
 	end
 end)
@@ -299,7 +294,7 @@ mod:add_text("markus_mercenary_passive_improved_desc", "Paced Strikes now increa
 -- Strike Together as Passive
 mod:add_text("career_passive_desc_es_3a", "Hitting 3 enemies in one swing grants 10% increased attack speed for 6 seconds to the Krubersreik 5, or 4.")
 
-mod:add_text("markus_mercenary_passive_group_proc_desc", "To activate Paced Strikes, Kruber only needs to hit 1 enemy.")
+mod:add_text("markus_mercenary_passive_group_proc_desc", "Strike By Yourself, Mayfly" "Paced Strikes now requires hitting 1 target with a single attack to trigger.")
 
 
 
@@ -635,6 +630,16 @@ mod:add_talent_buff_template("empire_soldier", "tb_cd_grail", {
 })
 mod:add_text("markus_questing_knight_ability_buff_on_kill_desc", "Killing an enemy with Blessed Blade increases movement speed by 35%% for 25 seconds. Reduces cooldown by 30%%.")
 
+-- Virtue of Stoicism
+-- 25% as thp instead of 50%
+mod:modify_talent_buff_template("empire_soldier", "markus_questing_knight_health_refund_over_time", {
+	heal_amount_fraction = 0.25 -- 0.5
+})
+mod:modify_talent("es_questingknight", 5, 1, {
+    description = "markus_questing_knight_health_refund_over_time_desc",
+    description_values = {},
+})
+mod:add_text("markus_questing_knight_health_refund_over_time_desc", "25% of damage taken is regenerated as temporary health after 5 seconds.")
 
 --[[
 
@@ -976,7 +981,7 @@ mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_increased_ra
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_drakefire_ranged_power", {
 	{
 		stat_buff = "increased_weapon_damage_ranged",
-		multiplier = 0.13, -- 0.2 -- Damage value increase per stack. There are 10 stacks.
+		multiplier = 0.05, -- 0.2 -- Damage value increase per stack. There are 10 stacks.
 	},
 })
 mod:modify_talent_buff_template("dwarf_ranger", "bardin_ironbreaker_drakefire_changing_attack_speed", {
@@ -1157,11 +1162,6 @@ mod:modify_talent("dr_slayer", 5, 3, {
 	buffs = {
 		"bardin_slayer_push_on_dodge"
 	}
-})
-mod:add_text("bardin_slayer_activated_ability_leap_damage_desc", "While airborne during leap, reduces damage taken by 90%% and increases attack damage by 150%%.")
-mod:modify_talent_buff_template("dwarf_ranger", "bardin_slayer_activated_ability_leap_damage_buff", {
-	stat_buff = "damage_taken",
-	multiplier = -0.90
 })
 mod:add_text("gs_bardin_slayer_push_on_dodge_desc", "Effective dodges pushes nearby small enemies out of the way. Increases dodge range by 10% and reduces damage taken by 15%.")
 
@@ -1619,7 +1619,7 @@ mod:add_talent_buff_template("wood_elf", "kerillian_shade_ult_invis_combo_window
 	duration = 0.3,
 	refresh_durations = true,
 	event = "on_kill_elite_special",
-	extend_time = 1,
+	extend_time = 1,                                           
 	max_stacks = 1,
 	icon = "kerillian_shade_passive_stealth_on_backstab_kill",
 	remove_buff_func = "kerillian_shade_missed_combo_window"
@@ -1627,7 +1627,7 @@ mod:add_talent_buff_template("wood_elf", "kerillian_shade_ult_invis_combo_window
 mod:add_proc_function("shade_combo_stealth_on_hit", function (owner_unit, buff, params)
 	if ALIVE[owner_unit] then
 		local buff_extension = ScriptUnit.extension(owner_unit, "buff_system")
-
+		
 		if not buff_extension:has_buff_type("kerillian_shade_ult_invis_combo_blocker") then
 			if buff_extension:num_buff_stacks("shimmer_charges") > 0 then                    -- only gives shimmer buff if you have charges
 				buff_extension:add_buff("kerillian_shade_ult_invis_combo_window")
@@ -1644,10 +1644,10 @@ mod:add_proc_function("shimmer_control", function (owner_unit, buff, params)
 		local buff_name = buff_template.buff_to_remove
 		local buff_extension = ScriptUnit.extension(owner_unit, "buff_system")
 		local buffs = buff_extension:get_stacking_buff(buff_name)
-
+		
 		if buffs then
 			local num_stacks = #buffs
-
+			
 			if not buff_extension:has_buff_type("shimmer_abuser") then
 				if num_stacks > 0 then
 					local buff_id = buffs[num_stacks].id
@@ -1669,18 +1669,7 @@ mod:modify_talent("we_shade", 6, 1, {
 })
 mod:add_text("kerillian_shade_activated_stealth_combo_desc_tb", "Leaving Infiltrate grants stealth for 3 seconds. Killing an Elite or Special extends this duration by 1 second up to a maximum of 4 times.")
 
--- shorter cd for hungry wind
-mod:modify_talent("we_shade", 6, 2, {
-    buffs = {
-        "hw_cooldown"
-    }
-})
-mod:add_talent_buff_template("wood_elf", "hw_cooldown", {
-    stat_buff = "activated_cooldown",
-    multiplier = -0.33,
-    max_stacks = 1
-})
-mod:add_text("kerillian_shade_activated_ability_phasing_desc", "Leaving Infiltrate grants Kerillian 10%% movement speed and 15%% power with the ability to pass through enemies for 10 seconds. Infiltrate no longer grants bonus damage. Reduced the cooldown of Infiltrate by 33%%.")
+
 
 --[[
 
@@ -1708,14 +1697,6 @@ mod:add_talent_buff_template("wood_elf", "tb_cd_thorn", {
 	stat_buff = "activated_cooldown",
 	multiplier = -0.3,
 	max_stacks = 1
-})
-mod:modify_talent_buff_template("wood_elf", "kerillian_thorn_sister_big_push_buff_2", {
-    multiplier = 2.5,
-    duration = 0.2,
-})
-mod:modify_talent_buff_template("wood_elf", "kerillian_thorn_sister_big_push_buff", {
-		bonus = 1.0,
-		duration = 0.2,
 })
 mod:add_text("kerillian_thorn_sister_debuff_wall_desc_2", "Thornwake instead causes roots to burst from the ground, staggering enemies and applying Blackvenom to them. Reduces cooldown by 30%%.")
 
@@ -1855,17 +1836,6 @@ mod:modify_talent("wh_bountyhunter", 5, 3, {
 	},
 })
 
---mod:modify_talent_buff_template("witch_hunter", "victor_bountyhunter_activated_ability_passive_cooldown_reduction", {
---    cooldown = 4.5, -- 10
---    multiplier = 0.2,
---})
-
-mod:modify_talent("wh_bountyhunter", 6, 1, {
-    description = "victor_bountyhunter_activated_ability_reset_cooldown_on_stacks_2_desc",
-    description_values = {},
-})
-mod:add_text("victor_bountyhunter_activated_ability_reset_cooldown_on_stacks_2_desc", "Ranged critical hits reduces the cooldown of Locked and Loaded by 20%. Can only trigger once every 4.5 seconds.")
-
 -- Indisctiminate blast cdr upped to 60%
 mod:add_talent_buff_template("witch_hunter", "victor_bountyhunter_activated_ability_blast_shotgun_cdr", {
     multiplier = -0.6, -- -0.25
@@ -1942,20 +1912,20 @@ mod:add_talent_buff_template("witch_hunter", "victor_priest_5_2_speed_buff", {
 })
 
 -- reduce long bubble to 7 seconds (Unyielding Blessing)
-CareerConstants.wh_priest.talent_6_1_improved_ability_duration = 10 --10 --this should already change the description as well
-mod:add_text("victor_priest_6_1_desc_new", "Shield of Faith now lasts 10 seconds. BEEG cat means BEEG shield.")
+CareerConstants.wh_priest.talent_6_1_improved_ability_duration = 7 --10 --this should already change the description as well
+mod:add_text("victor_priest_6_1_desc_new", "Shield of Faith now lasts 7 seconds. The shielded hero's attacks cause the shield to pulse, staggering nearby enemies.")
 
 mod:add_text("career_active_desc_wh_priest", "Saltzpyre imbues himself or an ally with a shield, rendering them immune to damage for 5 seconds. Upon expiring, the shield explodes, inflicting damage on nearby enemies. Hold to target allies.") -- just because FS formatting is awful
 mod:add_text("victor_priest_5_2_desc", "Bless the party with 10%% increased movement speed. Fly you fools.")
 mod:add_text("victor_priest_5_2", "Prayer of Flight")
-mod:add_text("victor_priest_6_2_desc", "Shield of Faith always affects Victor as well. Autofister empowers the shield to last 5 seconds.")
+mod:add_text("victor_priest_6_2_desc", "Shield of Faith always affects Victor as well. Shield of Faith now lasts 3 seconds.")
 
 local spell_params = {}
 local spell_params_improved = {
 	external_optional_duration = CareerConstants.wh_priest.talent_6_1_improved_ability_duration,
 }
 local spell_params_double= {
-	external_optional_duration = 5
+	external_optional_duration = 3
 }
 local spell_buffs = {
 	"victor_priest_activated_ability_invincibility",
