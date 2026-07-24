@@ -2179,7 +2179,7 @@ mod:add_text("sienna_adept_increased_burn_damage_reduced_non_burn_damage_desc", 
 -- Lingering Flames
 mod:add_talent_buff_template("bright_wizard", "battle_wizard_lingering_reduced_dot_damage", {
     stat_buff = "increased_burn_dot_damage",
-    multiplier = -0.67, -- 0.5
+    multiplier = -0.5,
 })
 
 mod:modify_talent("bw_adept", 2, 3, {
@@ -2189,7 +2189,7 @@ mod:modify_talent("bw_adept", 2, 3, {
     description = "tb_sienna_adept_infinite_burn_desc",
     description_values = {},
 })
-mod:add_text("tb_sienna_adept_infinite_burn_desc", "Sienna's burning effects now last until the affected enemy dies. Burning effects do not stack and deal 67% reduced damage.")
+mod:add_text("tb_sienna_adept_infinite_burn_desc", "Sienna's burning effects now last until the affected enemy dies. Burning effects do not stack and deal 50% reduced damage.")
 --[[
 InfiniteBurnDotLookup = InfiniteBurnDotLookup or {}
 local buff_perk_names = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
