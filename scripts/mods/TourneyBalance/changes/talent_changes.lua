@@ -153,6 +153,47 @@ function mod.add_talent(self, career_name, tier, index, new_talent_name, new_tal
     }
 end
 
+-- Fervent Huntress noclip
+local function get_variable(path_to_movement_setting_to_modify, unit)
+	fassert(#path_to_movement_setting_to_modify > 0, "movement_setting_exists needs at least a movement_setting_to_modify")
+
+	local movement_settings_table = PlayerUnitMovementSettings.get_movement_settings_table(unit)
+	local movement_value = movement_settings_table
+
+	for _, movement_setting in ipairs(path_to_movement_setting_to_modify) do
+		movement_value = movement_value[movement_setting]
+
+		if not movement_value then
+			break
+		end
+	end
+
+	if movement_value then
+		return movement_value
+	else
+		ferror("Variable does not exist in PlayerUnitMovementSettings")
+	end
+end
+local function set_variable(path_to_movement_setting_to_modify, unit, value)
+	local nr_of_settings = #path_to_movement_setting_to_modify
+
+	fassert(nr_of_settings > 0, "movement_setting_exists needs at least a movement_setting_to_modify")
+
+	local unit_movement_settings_table = PlayerUnitMovementSettings.get_movement_settings_table(unit)
+	local movement_value = unit_movement_settings_table
+	local index = 1
+
+	while index <= nr_of_settings do
+		if nr_of_settings < index + 1 then
+			movement_value[path_to_movement_setting_to_modify[index]] = value
+		else
+			movement_value = movement_value[path_to_movement_setting_to_modify[index]]
+		end
+
+		index = index + 1
+	end
+end
+
 --[[
 
 ██╗░░██╗██████╗░██╗░░░██╗██████╗░███████╗██████╗░
@@ -172,6 +213,57 @@ end
 
 -- Helborg's Tutelage
 -- Added in random crits.
+
+ProcFunctions.add_buff_on_first_target_hit_helborg = function (owner_unit, buff, params)
+	local player = Managers.player:owner(owner_unit)
+
+    if player and player.remote then
+        return
+    end
+
+	if ALIVE[owner_unit] then
+		local target_number = params[4]
+
+		if target_number > 1 then
+			return
+		end
+
+		local buff_template = buff.template
+		local valid_attack_types = buff_template.valid_attack_types
+		local attack_type = params[2]
+
+		if valid_attack_types and not valid_attack_types[attack_type] then
+			return
+		end
+
+		local client_side = buff_template.client_side
+		local buff_name = buff_template.buff_to_add
+		local buff_extension = ScriptUnit.extension(owner_unit, "buff_system")
+
+		if buff_template.block_buff and buff_extension:has_buff_type(buff_template.block_buff) then
+			return
+		end
+
+		local network_manager = Managers.state.network
+		local network_transmit = network_manager.network_transmit
+		local unit_object_id = network_manager:unit_game_object_id(owner_unit)
+		local buff_template_name_id = NetworkLookup.buff_templates[buff_name]
+
+		if client_side then
+			buff_extension:add_buff(buff_name, {
+				attacker_unit = owner_unit,
+			})
+		elseif is_server() then
+			buff_extension:add_buff(buff_name, {
+				attacker_unit = owner_unit,
+			})
+			network_transmit:send_rpc_clients("rpc_add_buff", unit_object_id, buff_template_name_id, unit_object_id, 0, false)
+		else
+			network_transmit:send_rpc_server("rpc_add_buff", unit_object_id, buff_template_name_id, unit_object_id, 0, true)
+		end
+	end
+end
+
 
 mod:add_talent("es_mercenary", 2, 3, "mercenary_helborgs_tutelage", { 
 	num_ranks = 1,
@@ -194,7 +286,7 @@ mod:add_talent_buff_template("empire_soldier", "mercenary_helborgs_tutelage_buff
 		event = "on_hit",
 		buff_to_add = "mercenary_helborgs_tutelage_hit_counting_buff",
 		buff_on_stacks = 5,
-		buff_func = "add_buff_on_first_target_hit"
+		buff_func = "add_buff_on_first_target_hit_helborg" -- "add_buff_on_first_target_hit"
 	}
 })
 
@@ -225,7 +317,7 @@ mod:add_talent_buff_template("empire_soldier", "mercenary_helborgs_tutelage_crit
 	}
 })
 
-mod:add_talent_text("mercenary_helborgs_tutelage", "Hellborg's Tutelage", "Every 5th melee hit grants a guaranteed melee critical strike. Random Crits can still occur.")
+mod:add_talent_text("mercenary_helborgs_tutelage", "Hellborg's Tutelage", "Every 5 hits grant a guaranteed critical strike. Random Crits can still occur.")
 
 -- Enhanced Training
 mod:add_proc_function("gain_markus_mercenary_passive_proc", function (owner_unit, buff, params)
@@ -1330,24 +1422,77 @@ mod:add_buff_function("gs_update_kerillian_waywatcher_regen", function (unit, bu
         buff.next_heal_tick = t + time_between_heals
     end
 end)
---[[mod:modify_talent("we_waywatcher", 2, 1, {
-	description = "kerillian_waywatcher_movement_speed_on_special_kill_desc",
-	name = "kerillian_waywatcher_movement_speed_on_special_kill",
-	num_ranks = 1,
-	icon = "kerillian_waywatcher_movement_speed_on_special_kill",
-	description_values = {
-		{
-			value_type = "baked_percent",
-			value = 1.15
-		},
-		{
-			value = 10
-		}
-	},
-	buffs = {
-		"kerillian_waywatcher_movement_speed_on_special_kill"
-	}
-}) ]]
+
+-- Fervent Huntress noclip
+mod:add_buff_function("ws_apply_movement_buff_and_noclip", function (unit, buff, params)
+	local bonus = params.bonus
+	local multiplier = params.multiplier
+
+	if buff.template.wind_mutator then
+		local wind_strength = Managers.weave:get_wind_strength()
+
+		multiplier = multiplier[wind_strength]
+	end
+
+	local path_to_movement_setting_to_modify = buff.template.path_to_movement_setting_to_modify
+	local movement_setting_value = get_variable(path_to_movement_setting_to_modify, unit)
+
+	if bonus then
+		movement_setting_value = movement_setting_value + bonus
+	end
+
+	if multiplier then
+		movement_setting_value = movement_setting_value * multiplier
+	end
+
+	if ALIVE[unit] then
+		local status_extension = ScriptUnit.extension(unit, "status_system")
+		status_extension:set_noclip(true, "ws_movement_buff_and_noclip")
+	end
+
+	set_variable(path_to_movement_setting_to_modify, unit, movement_setting_value)
+end)
+
+mod:add_buff_function("ws_remove_movement_buff_and_noclip", function (unit, buff, params)
+	local bonus = params.bonus
+	local multiplier = params.multiplier
+
+	if buff.template.wind_mutator then
+		local wind_strength = Managers.weave:get_wind_strength()
+
+		multiplier = multiplier[wind_strength]
+	end
+
+	local path_to_movement_setting_to_modify = buff.template.path_to_movement_setting_to_modify
+	local movement_setting_value = get_variable(path_to_movement_setting_to_modify, unit)
+
+	if multiplier then
+		movement_setting_value = movement_setting_value / multiplier
+	end
+
+	if bonus then
+		movement_setting_value = movement_setting_value - bonus
+	end
+
+	if ALIVE[unit] then
+		local status_extension = ScriptUnit.extension(unit, "status_system")
+		status_extension:set_noclip(false, "ws_movement_buff_and_noclip")
+	end
+
+	set_variable(path_to_movement_setting_to_modify, unit, movement_setting_value)
+end)
+mod:modify_talent_buff_template("wood_elf", "kerillian_waywatcher_movement_speed_on_special_kill_buff", {
+	apply_buff_func = "ws_apply_movement_buff_and_noclip",
+	remove_buff_func = "ws_remove_movement_buff_and_noclip",
+})
+mod:modify_talent("we_waywatcher", 5, 1, {
+    description = "elf_ws_movement_speed_on_special_kill_desc",
+    description_values = {},
+})
+mod:add_text("elf_ws_movement_speed_on_special_kill_desc", "Killing a special or elite enemy increases movement speed by 15.0% and grants noclip for 10 seconds.")
+
+
+
 
 mod:modify_talent("we_waywatcher", 2, 3, {
     description_values = {
@@ -1379,6 +1524,20 @@ mod:modify_talent_buff_template("wood_elf", "kerillian_waywatcher_attack_speed_o
 	}
 }) ]]
 mod:add_text("kerillian_waywatcher_passive_cooldown_restore_desc", "Amaranthe also restores 5.0%% ammunition every tick.")
+
+-- Piercing Shot Refund Fix on Headshot Through Teammate
+ProcFunctions.kerillian_waywatcher_reduce_activated_ability_cooldown = function (owner_unit, buff, params)
+    if ALIVE[owner_unit] then
+        local hit_zone = params[3]
+        local buff_type = params[5]
+
+        if buff_type == "RANGED_ABILITY" and (hit_zone == "head" or hit_zone == "neck" or hit_zone == "weakspot") then
+            local career_extension = ScriptUnit.extension(owner_unit, "career_system")
+
+            career_extension:reduce_activated_ability_cooldown_percent(buff.multiplier)
+        end
+    end
+end
 
 --[[
 
@@ -1855,10 +2014,10 @@ mod:modify_talent("wh_bountyhunter", 5, 3, {
 	},
 })
 
---mod:modify_talent_buff_template("witch_hunter", "victor_bountyhunter_activated_ability_passive_cooldown_reduction", {
---    cooldown = 4.5, -- 10
---    multiplier = 0.2,
---})
+mod:modify_talent_buff_template("witch_hunter", "victor_bountyhunter_activated_ability_passive_cooldown_reduction", {
+    cooldown = 4.5,
+    multiplier = 0.2,
+})
 
 mod:modify_talent("wh_bountyhunter", 6, 1, {
     description = "victor_bountyhunter_activated_ability_reset_cooldown_on_stacks_2_desc",
@@ -2020,7 +2179,7 @@ mod:add_text("sienna_adept_increased_burn_damage_reduced_non_burn_damage_desc", 
 -- Lingering Flames
 mod:add_talent_buff_template("bright_wizard", "battle_wizard_lingering_reduced_dot_damage", {
     stat_buff = "increased_burn_dot_damage",
-    multiplier = -0.5,
+    multiplier = -0.67, -- 0.5
 })
 
 mod:modify_talent("bw_adept", 2, 3, {
@@ -2030,7 +2189,7 @@ mod:modify_talent("bw_adept", 2, 3, {
     description = "tb_sienna_adept_infinite_burn_desc",
     description_values = {},
 })
-mod:add_text("tb_sienna_adept_infinite_burn_desc", "Sienna's burning effects now last until the affected enemy dies. Burning effects do not stack and deal 50% reduced damage.")
+mod:add_text("tb_sienna_adept_infinite_burn_desc", "Sienna's burning effects now last until the affected enemy dies. Burning effects do not stack and deal 67% reduced damage.")
 --[[
 InfiniteBurnDotLookup = InfiniteBurnDotLookup or {}
 local buff_perk_names = require("scripts/unit_extensions/default_player_unit/buffs/settings/buff_perk_names")
@@ -2097,6 +2256,24 @@ mod:modify_talent("bw_adept", 5, 2, {
     },
 })
 mod:add_text("rebaltourn_sienna_adept_cooldown_reduction_on_burning_enemy_killed_desc", "Killing a burning enemy reduces the cooldown of Fire Walk by 2%%. 0.5 second cooldown.")
+
+-- Immersive Immolation
+-- Official: Hitting 4 or more enemies with one attack grants 15.0% increased attack speed for 5 seconds.
+-- TB: Hitting 1 or more enemies with one attack grants 15.0% increased melee attack speed for 5 seconds.
+mod:modify_talent_buff_template("bright_wizard", "sienna_adept_attack_speed_on_enemies_hit_buff", {
+    stat_buff = "attack_speed_melee", -- "attack_speed"
+})
+
+mod:modify_talent_buff_template("bright_wizard", "sienna_adept_attack_speed_on_enemies_hit", {
+    required_targets = 1 -- 4
+})
+
+mod:modify_talent("bw_adept", 5, 3, {
+    description = "sienna_adept_attack_speed_on_enemies_hit_desc",
+    description_values = {},
+})
+mod:add_text("sienna_adept_attack_speed_on_enemies_hit_desc", "Hitting 1 or more enemies with one attack grants 15.0% increased melee attack speed for 5 seconds.")
+
 
 -- Level 30
 
@@ -2254,6 +2431,101 @@ end)
 	Unchained Talents
 
 ]]
+-- Dissipate nerf
+local block_breaking_fatigue_types = {
+	blocked_attack = true,
+	blocked_attack_2 = true,
+	blocked_attack_3 = true,
+	blocked_berzerker = true,
+	blocked_charge = true,
+	blocked_headbutt = true,
+	blocked_ranged = true,
+	blocked_running = true,
+	blocked_slam = true,
+	blocked_sv_cleave = true,
+	blocked_sv_sweep = true,
+	blocked_sv_sweep_2 = true,
+	chaos_cleave = true,
+	chaos_spawn_combo = true,
+	complete = true,
+	ogre_shove = true,
+	shield_blocked_slam = true,
+	sv_push = true,
+	sv_shove = true,
+}
+mod:hook(GenericStatusExtension, "add_fatigue_points", function(func, self, fatigue_type, attacking_unit, blocking_weapon_unit, fatigue_point_costs_multiplier, is_timed_block)
+	local buff_extension = self.buff_extension
+
+	if Development.parameter("disable_fatigue_system") then
+		return
+	end
+
+	local player = self.player
+
+	if player and player.remote then
+		Crashify.print_exception("[GenericStatusExtension]", "Tried adding fatigue points to a remote player.")
+
+		return
+	end
+
+	local amount = PlayerUnitStatusSettings.fatigue_point_costs[fatigue_type]
+	local t = Managers.time:time("game")
+	local max_fatigue = PlayerUnitStatusSettings.MAX_FATIGUE
+	local max_fatigue_points = self.max_fatigue_points
+	local fatigue_cost = amount * (max_fatigue / max_fatigue_points) * (fatigue_point_costs_multiplier or 1)
+
+	if is_timed_block then
+		fatigue_cost = buff_extension:apply_buffs_to_value(fatigue_cost, "timed_block_cost")
+	end
+
+	if amount and fatigue_point_costs_multiplier and amount < 2 and fatigue_point_costs_multiplier < 1 and buff_extension:has_buff_perk("in_arc_block_cost_reduction") then
+		fatigue_cost = 0
+	end
+
+	if blocking_weapon_unit then
+		fatigue_cost = buff_extension:apply_buffs_to_value(fatigue_cost, "block_cost")
+
+		if buff_extension:has_buff_perk("overcharged_block") then
+			local overcharge_extension = ScriptUnit.has_extension(self.unit, "overcharge_system")
+
+			if overcharge_extension and overcharge_extension:above_overcharge_threshold() then
+				fatigue_cost = fatigue_cost * 0.5
+
+				amount = amount * 0.2 -- Dissipate Nerf
+
+				overcharge_extension:remove_charge(amount)
+			end
+		end
+	end
+
+	local fatigue = math.clamp(self.fatigue + fatigue_cost, 0, max_fatigue)
+
+	self:set_fatigue_points(fatigue, fatigue_type)
+
+	if blocking_weapon_unit then
+		buff_extension:trigger_procs("on_block", attacking_unit, fatigue_type, blocking_weapon_unit)
+	end
+
+	if max_fatigue <= fatigue and block_breaking_fatigue_types[fatigue_type] then
+		self:set_block_broken(true, t, attacking_unit)
+	end
+
+	if fatigue_cost > 0 then
+		self.last_fatigue_gain_time = t
+		self.show_fatigue_gui = true
+	end
+
+	if fatigue_type == "action_stun_push" then
+		self.action_stun_push = true
+	end
+
+	local first_person_extension = self.first_person_extension
+
+	if amount > PlayerUnitStatusSettings.fatigue_points_to_play_heavy_block_sfx and first_person_extension then
+		first_person_extension:play_hud_sound_event("Play_player_combat_heavy_block_sweetner", nil, false)
+	end
+end)
+
 -- Prevent interaction between Unchained Abandon and WP bubble
 --[[
 mod:modify_talent_buff_template("bright_wizard", "sienna_unchained_health_to_ult", {
@@ -2313,6 +2585,28 @@ end
 	Necromancer Talents
 
 ]]
+
+--mod:add_text("career_passive_desc_bw_necromancer_c", "Killing an enemy grants 2%% crit chance for 5 seconds. Max stacks 5.")
+--- We had a description change to one of Necro's passives that wasn't actually true? Why was this here?
+
+-- Death Ascendant
+mod:modify_talent_buff_template("bright_wizard", "sienna_necromancer_2_2_buff", {
+    stat_buff = "increased_weapon_damage_ranged" -- "power_level_ranged"
+})
+
+mod:modify_talent("bw_necromancer", 2, 2, {
+    description = "sienna_necromancer_2_2_desc",
+    description_values = {},
+})
+mod:add_text("sienna_necromancer_2_2_desc", "Casting spells grants 5% ranged damage for 6 seconds. Max stacks 5.")
+
+-- Unlimited POWAAAAHHHH!!!!...I mean, Reaping.
+mod:modify_talent_buff_template("bright_wizard", "sienna_necromancer_2_3", {
+	multiplier = 0
+})
+mod:add_text("sienna_necromancer_2_3_desc", "Critical attacks have unlimited cleave.")
+
+-- Cursed Blood
 mod:add_proc_function("necromancer_crit_burst", function (owner_unit, buff, params, world, param_order)
 	local is_crit = params [param_order.is_critical_strike]
 	if not is_crit then
@@ -2399,18 +2693,13 @@ mod:add_talent_buff_template("bright_wizard", "no_proc_necro", {
 mod:modify_talent_buff_template("bright_wizard", "sienna_necromancer_4_1_cursed_blood", {
 	propagation_multiplier = 0.10
 })
+
+-- Lost Souls
 DamageProfileTemplates.sienna_necromancer_blood_explosion.default_target.power_distribution.impact = 0
 DamageProfileTemplates.sienna_necromancer_ability_stagger.default_target.power_distribution.impact = 0
 DamageProfileTemplates.trapped_soul.default_target.power_distribution_near.impact = 0
 DamageProfileTemplates.trapped_soul.default_target.power_distribution_far.impact = 0
 DamageProfileTemplates.necromancer_crit_burst_stagger.default_target.power_distribution.impact = 0
-
-
-mod:modify_talent_buff_template("bright_wizard", "sienna_necromancer_2_3", {
-	multiplier = 0
-})
-mod:add_text("sienna_necromancer_2_3_desc", "Critical attacks have unlimited cleave.")
-mod:add_text("career_passive_desc_bw_necromancer_c", "Killing an enemy grants 2%% crit chance for 5 seconds. Max stacks 5.")
 
 --[[
 

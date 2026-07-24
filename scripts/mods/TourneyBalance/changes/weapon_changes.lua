@@ -12,6 +12,40 @@ local buff_perks = require("scripts/unit_extensions/default_player_unit/buffs/se
 
 ]]
 
+local function merge(dst, src)
+		for k, v in pairs(src) do
+			dst[k] = v
+		end
+		return dst
+end
+function mod.add_buff_template(self, buff_name, buff_data, extra_data)
+    local new_buff = {
+        buffs = {
+            merge({ name = buff_name }, buff_data),
+        },
+    }
+    if extra_data then
+        new_buff = merge(new_buff, extra_data)
+	elseif type(buff_data[1]) == "table" then
+		new_buff = {
+			buffs = buff_data,
+		}
+		if new_buff.buffs[1].name == nil then
+			new_buff.buffs[1].name = buff_name
+		end	
+    end
+    BuffTemplates[buff_name] = new_buff
+    local index = #NetworkLookup.buff_templates + 1
+    NetworkLookup.buff_templates[index] = buff_name
+    NetworkLookup.buff_templates[buff_name] = index
+end
+function mod.add_explosion_template(self, explosion_name, data)
+    ExplosionTemplates[explosion_name] = merge({ name = explosion_name}, data)
+    local index = #NetworkLookup.explosion_templates + 1
+    NetworkLookup.explosion_templates[index] = explosion_name
+    NetworkLookup.explosion_templates[explosion_name] = index
+end
+
 --[[
 
 	GENERAL
@@ -223,22 +257,22 @@ DamageProfileTemplates.dr_deus_01.default_target.boost_curve_coefficient = 0.5
 
 --Hagbane
 DamageProfileTemplates.poison = {
-	is_dot = true,
 	charge_value = "n/a",
-	no_stagger_damage_reduction_ranged = true,
+	is_dot = true,
 	no_stagger = true,
+	no_stagger_damage_reduction_ranged = true,
 	cleave_distribution = {
 		attack = 0.25,
-		impact = 0.25
+		impact = 0.25,
 	},
 	armor_modifier = {
 		attack = {
-			1.6,
+			1.6, -- 1.25
 			1,
 			3,
 			1,
 			0.5,
-			0.2
+			0.2,
 		},
 		impact = {
 			1,
@@ -246,17 +280,53 @@ DamageProfileTemplates.poison = {
 			3,
 			1,
 			0.5,
-			0
-		}
+			0,
+		},
 	},
 	default_target = {
 		attack_template = "arrow_poison_aoe",
 		damage_type = "arrow_poison_dot",
 		power_distribution = {
 			attack = 0.035,
-			impact = 0
-		}
-	}
+			impact = 0,
+		},
+	},
+}
+
+DamageProfileTemplates.poison_aoe = {
+	charge_value = "aoe",
+	is_dot = true,
+	no_friendly_fire = true,
+	no_stagger = false,
+	no_stagger_damage_reduction_ranged = true,
+	require_damage_for_dot = true,
+	armor_modifier = {
+		attack = {
+			1.25,
+			0, -- 0.1
+			1.5,
+			1,
+			1,
+			0,
+		},
+		impact = {
+			1,
+			0.75,
+			1,
+			1,
+			0.5,
+			0,
+		},
+	},
+	default_target = {
+		attack_template = "arrow_poison_aoe",
+		damage_type = "poison",
+		dot_template_name = "aoe_poison_dot",
+		power_distribution = {
+			attack = 0.05,
+			impact = 0.5,
+		},
+	},
 }
 
 --Javelin
@@ -310,6 +380,31 @@ mod:add_buff_template("we_deus_01_dot_charged", {
         buff_perks.burning_elven_magic,
     },
 })
+-- Energy recharge rate nerf.
+EnergyData.we_waywatcher = {
+	recharge_delay = 0.2,
+	max_value = 25,
+	depletion_cooldown = 5,
+	recharge_rate = 1 -- 1.5
+}
+EnergyData.we_maidenguard = {
+	recharge_delay = 0.2,
+	max_value = 25,
+	depletion_cooldown = 5,
+	recharge_rate = 1 -- 1.5
+}
+EnergyData.we_shade = {
+	recharge_delay = 0.2,
+	max_value = 25,
+	depletion_cooldown = 5,
+	recharge_rate = 1 -- 1.5
+}
+EnergyData.we_thornsister = {
+	recharge_delay = 0.2,
+	max_value = 25,
+	depletion_cooldown = 5,
+	recharge_rate = 1 -- 1.5
+}
 
 -- Swiftbow
 DamageProfileTemplates.arrow_machinegun.cleave_distribution.attack = 0.25
@@ -1157,6 +1252,229 @@ Weapons.sienna_scholar_career_skill_weapon.actions.action_career_hold.prioritize
 }
 DamageProfileTemplates.fire_spear_trueflight.friendly_fire_multiplier = 0 -- remove FF on Crit
 
+-- Soulstealer
+-- Added Bulwark to the list as well
+Weapons.staff_death.actions.action_two.default.prioritized_breeds = {
+	beastmen_standard_bearer = 1,  
+	beastmen_bestigor = 0.75,
+	chaos_vortex_sorcerer = 1,
+	chaos_corruptor_sorcerer = 1, 
+	chaos_raider = 0.75,
+	chaos_warrior = 0.75,
+	chaos_bulwark = 0.75,
+	chaos_berzerker = 0.75,
+	skaven_warpfire_thrower = 1,	 
+	skaven_gutter_runner = 1,
+	skaven_pack_master = 1, 
+	skaven_poison_wind_globadier = 1, 
+	skaven_ratling_gunner = 1,
+	skaven_loot_rat = 1, 
+	skaven_plague_monk = 0.75,
+	skaven_storm_vermin_commander = 0.75, 
+	skaven_storm_vermin = 0.75, 
+	skaven_storm_vermin_with_shield = 0.75,
+	skaven_storm_vermin_champion = 0.75,
+}
+Weapons.staff_death.actions.action_one.default.impact_data.damage_profile = "soulstealer_left_click"
+Weapons.staff_death.actions.action_one.default.chain_hit_settings.damage_profile = "soulstealer_left_click"
+Weapons.staff_death.actions.action_one.default_02.impact_data.damage_profile = "soulstealer_left_click"
+Weapons.staff_death.actions.action_one.default_02.chain_hit_settings.damage_profile = "soulstealer_left_click"
+Weapons.staff_death.actions.action_one.soul_rip.damage_steps[2].damage_profile = "soulstealer_soul_rip_aka_da_suck"
+
+NewDamageProfileTemplates.soulstealer_left_click = {
+	charge_value = "projectile",
+	no_friendly_fire = true,
+	no_stagger_damage_reduction_ranged = true,
+	require_damage_for_dot = false,
+	critical_strike = {
+		attack_armor_power_modifer = {
+			1,
+			0.13, -- 0.35
+			1.2,
+			1,
+			0.64, -- 1
+			0.25,
+		},
+		impact_armor_power_modifer = {
+			1,
+			0.6,
+			0,
+			0,
+			1,
+			0.25,
+		},
+	},
+	armor_modifier = {
+		attack = {
+			0.8,
+			0.32,
+			1,
+			1,
+			0.75, -- 0.8
+			0.05,
+		},
+		impact = {
+			1,
+			0.6,
+			0,
+			0,
+			0.5,
+			0,
+		},
+	},
+	cleave_distribution = {
+		attack = 0,
+		impact = 0,
+	},
+	default_target = {
+		attack_template = "fireball",
+		boost_curve_coefficient = 0.75,
+		boost_curve_coefficient_headshot = 1,
+		boost_curve_type = "linesman_curve",
+		dot_balefire_variant = true,
+		dot_template_name = "death_staff_dot",
+		power_distribution = {
+			attack = 0.24,
+			impact = 0.25,
+		},
+		range_modifier_settings = carbine_dropoff_ranges,
+	},
+	targets = {
+		{
+			attack_template = "fireball",
+			boost_curve_coefficient = 0.75,
+			boost_curve_coefficient_headshot = 1,
+			boost_curve_type = "linesman_curve",
+			dot_balefire_variant = true,
+			dot_template_name = "death_staff_dot",
+			power_distribution = {
+				attack = 0.16,
+				impact = 0.25,
+			},
+			range_modifier_settings = carbine_dropoff_ranges,
+		},
+		{
+			attack_template = "fireball",
+			boost_curve_coefficient = 0.75,
+			boost_curve_coefficient_headshot = 1,
+			boost_curve_type = "linesman_curve",
+			dot_balefire_variant = true,
+			dot_template_name = "death_staff_dot",
+			power_distribution = {
+				attack = 0.08,
+				impact = 0.25,
+			},
+			range_modifier_settings = carbine_dropoff_ranges,
+		},
+		{
+			attack_template = "fireball",
+			boost_curve_coefficient = 0.75,
+			boost_curve_coefficient_headshot = 1,
+			boost_curve_type = "linesman_curve",
+			dot_balefire_variant = true,
+			dot_template_name = "death_staff_dot",
+			power_distribution = {
+				attack = 0.06,
+				impact = 0.22,
+			},
+			range_modifier_settings = carbine_dropoff_ranges,
+		},
+		{
+			attack_template = "fireball",
+			boost_curve_coefficient = 0.75,
+			boost_curve_coefficient_headshot = 1,
+			boost_curve_type = "linesman_curve",
+			dot_balefire_variant = true,
+			dot_template_name = "death_staff_dot",
+			power_distribution = {
+				attack = 0.08,
+				impact = 0.18,
+			},
+			range_modifier_settings = carbine_dropoff_ranges,
+		},
+	},
+}
+
+NewDamageProfileTemplates.soulstealer_soul_rip_aka_da_suck = {
+	charge_value = "heavy_instant_projectile",
+	no_stagger_damage_reduction_ranged = true,
+	shield_break = true,
+	critical_strike = {
+		attack_armor_power_modifer = {
+			0.95, -- 1
+			0.637, -- 1.4
+			1.6, -- 3
+			1,
+			0.23, -- 1
+			0.54, -- 1
+		},
+		impact_armor_power_modifer = {
+			1,
+			0, -- 1
+			1,
+			1,
+			1,
+			0, -- 1
+		},
+	},
+	armor_modifier_near = {
+		attack = {
+			1.295, -- 1
+			0.806, -- 1.2
+			2.1, -- 2.5
+			1,
+			0.4, -- 0.75
+			0.7,
+		},
+		impact = {
+			1,
+			0, -- 1
+			1,
+			1,
+			1,
+			0, -- 1
+		},
+	},
+	armor_modifier_far = {
+		attack = {
+			1.295, -- 1
+			0.72, -- 1
+			1.5, -- 2.5
+			1,
+			0.36, -- 0.75
+			0.63, -- 0.7
+		},
+		impact = {
+			1,
+			0, -- 1
+			1,
+			1,
+			1,
+			0, -- 1
+		},
+	},
+	cleave_distribution = {
+		attack = 0.35,
+		impact = 0.3,
+	},
+	default_target = {
+		attack_template = "shot_sniper",
+		boost_curve_coefficient = 1,
+		boost_curve_coefficient_headshot = 1,
+		boost_curve_type = "smiter_curve",
+		headshot_boost_boss = 0.5,
+		power_distribution_near = {
+			attack = 1.1,
+			impact = 0.5,
+		},
+		power_distribution_far = {
+			attack = 0.9,
+			impact = 0.5,
+		},
+		range_modifier_settings = sniper_dropoff_ranges,
+	},
+}
+
 --[[
 
 ███╗░░░███╗███████╗██╗░░░░░███████╗███████╗
@@ -1562,12 +1880,12 @@ NewDamageProfileTemplates.tb_two_handed_sword_light = {
 -- lights
 Weapons.one_hand_axe_template_1.actions.action_one.light_attack_last.anim_time_scale = 1.3 --1.035
 Weapons.one_hand_axe_template_2.actions.action_one.light_attack_last.anim_time_scale = 1.3 --1.035
-Weapons.one_hand_axe_template_1.actions.action_one.light_attack_last.damage_profile = "light_1h_axe_tb"
-Weapons.one_hand_axe_template_2.actions.action_one.light_attack_last.damage_profile = "light_1h_axe_tb"
-Weapons.one_hand_axe_template_1.actions.action_one.light_attack_left.damage_profile = "light_1h_axe_tb"
-Weapons.one_hand_axe_template_2.actions.action_one.light_attack_left.damage_profile = "light_1h_axe_tb"
-Weapons.one_hand_axe_template_1.actions.action_one.light_attack_right.damage_profile = "light_1h_axe_tb"
-Weapons.one_hand_axe_template_2.actions.action_one.light_attack_right.damage_profile = "light_1h_axe_tb"
+Weapons.one_hand_axe_template_1.actions.action_one.light_attack_last.damage_profile = "light_1h_axe_tb_last"
+Weapons.one_hand_axe_template_2.actions.action_one.light_attack_last.damage_profile = "light_1h_axe_tb_last"
+Weapons.one_hand_axe_template_1.actions.action_one.light_attack_left.damage_profile = "light_1h_axe_tb_left_right"
+Weapons.one_hand_axe_template_2.actions.action_one.light_attack_left.damage_profile = "light_1h_axe_tb_left_right"
+Weapons.one_hand_axe_template_1.actions.action_one.light_attack_right.damage_profile = "light_1h_axe_tb_left_right"
+Weapons.one_hand_axe_template_2.actions.action_one.light_attack_right.damage_profile = "light_1h_axe_tb_left_right"
 Weapons.one_hand_axe_template_1.actions.action_one.light_attack_bopp.damage_profile = "light_1h_axe_tb"
 Weapons.one_hand_axe_template_2.actions.action_one.light_attack_bopp.damage_profile = "light_1h_axe_tb"
 NewDamageProfileTemplates.light_1h_axe_tb = {
@@ -1647,6 +1965,162 @@ NewDamageProfileTemplates.light_1h_axe_tb = {
 		}
 	},
 }
+NewDamageProfileTemplates.light_1h_axe_tb_last = {
+	armor_modifier = {
+		attack = {
+			1.25,
+			0.45,
+			2.1,
+			1,
+			1,
+			0.45
+		},
+		impact = {
+			1,
+			0.5,
+			1,
+			1,
+			0.75,
+			0.25
+		}
+	},
+	critical_strike = {
+		attack_armor_power_modifer = {
+			1.25,
+			0.45,
+			2.75,
+			1,
+			1
+		},
+		impact_armor_power_modifer = {
+			1,
+			1,
+			1,
+			1,
+			1
+		}
+	},
+	charge_value = "light_attack",
+	cleave_distribution = {
+		attack = 0.3,
+		impact = 0.3
+	},
+	default_target = {
+		boost_curve_type = "smiter_curve",
+		attack_template = "slashing_smiter",
+		boost_curve_coefficient_headshot = 2,
+		power_distribution = {
+			attack = 0.25,
+			impact = 0.175
+		}
+	},
+	ignore_stagger_reduction = true,
+	targets =  {
+		[2] = {
+			boost_curve_type = "smiter_curve",
+			attack_template = "slashing_smiter",
+			armor_modifier = {
+				attack = {
+					1,
+					0.25,
+					1,
+					1,
+					0.75
+				},
+				impact = {
+					0.75,
+					0.25,
+					1,
+					1,
+					0.75
+				}
+			},
+			power_distribution = {
+				attack = 0.075,
+				impact = 0.075
+			}
+		}
+	},
+}
+NewDamageProfileTemplates.light_1h_axe_tb_left_right = {
+	armor_modifier = {
+		attack = {
+			1.25,
+			0.45,
+			2.1,
+			1,
+			1,
+			0.45
+		},
+		impact = {
+			1,
+			0.5,
+			1,
+			1,
+			0.75,
+			0.25
+		}
+	},
+	critical_strike = {
+		attack_armor_power_modifer = {
+			1.25,
+			0.45,
+			2.75,
+			1,
+			1
+		},
+		impact_armor_power_modifer = {
+			1,
+			1,
+			1,
+			1,
+			1
+		}
+	},
+	charge_value = "light_attack",
+	cleave_distribution = {
+		attack = 0.15,
+		impact = 0.15
+	},
+	default_target = {
+		boost_curve_type = "smiter_curve",
+		attack_template = "slashing_smiter",
+		boost_curve_coefficient_headshot = 2,
+		power_distribution = {
+			attack = 0.25,
+			impact = 0.175
+		}
+	},
+	ignore_stagger_reduction = true,
+	targets =  {
+		[2] = {
+			boost_curve_type = "smiter_curve",
+			attack_template = "slashing_smiter",
+			armor_modifier = {
+				attack = {
+					1,
+					0.25,
+					1,
+					1,
+					0.75
+				},
+				impact = {
+					0.75,
+					0.25,
+					1,
+					1,
+					0.75
+				}
+			},
+			power_distribution = {
+				attack = 0.075,
+				impact = 0.075
+			}
+		}
+	},
+}
+
+
 --Heavy
 Weapons.one_hand_axe_template_1.actions.action_one.heavy_attack_left.range_mod = 1.2 --1
 Weapons.one_hand_axe_template_1.actions.action_one.heavy_attack_right.range_mod = 1.2 --1
@@ -3295,15 +3769,15 @@ Weapons.dual_wield_daggers_template_1.actions.action_one.heavy_attack.allowed_ch
 Weapons.dual_wield_daggers_template_1.actions.action_one.heavy_attack_stab.allowed_chain_actions[5].start_time = 0.35
 Weapons.dual_wield_daggers_template_1.max_fatigue_points = 6
 
--- Elven Spear
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.damage_window_start = 0.347 -- 0.31, 0.27, 0.35
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.damage_window_end = 0.39 -- 0.35, 0.38
+-- Elven Spear																								-- values at v6.11.0 / v6.4.0
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.damage_window_start = 0.347	-- official: 0.35 / 0.31
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.damage_window_end = 0.39 		-- official: 0.37 / 0.35
 
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_window_start = 0.223 -- 0.2, 0.17 
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_window_end = 0.3 -- 0.3, 0.34 
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_window_start = 0.223 -- official: 0.2 / 0.25
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_window_end = 0.3  	-- official: 0.3 / 0.3
 
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_start = 0.19 -- 0.15
-Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_end = 0.33 -- 0.3 
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_start = 0.19	-- official: 0.15 / 0.2
+Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_2.damage_window_end = 0.33  	-- official: 0.3 / 0.3
 
 Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_left.damage_profile = "elven_spear_light_thrusts"
 Weapons.two_handed_spears_elf_template_1.actions.action_one.light_attack_stab_1.damage_profile = "elven_spear_light_thrusts"
